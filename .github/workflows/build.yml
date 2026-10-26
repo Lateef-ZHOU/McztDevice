@@ -1,0 +1,68 @@
+name: Build and test
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      windows_native:
+        type: boolean
+        default: false
+        description: Run on the prepared Windows native-dependency runner
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Install Linux Qt runtime dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-dev libegl1-mesa-dev pkg-config libpcap-dev
+      - uses: jurplel/install-qt-action@a9c63c7c123f3069cff414e7e482d95dfa9d8125
+        with:
+          version: '6.11.2'
+          modules: 'qtshadertools'
+          # Qt 6.11 Windows archive layout: upstream aqtinstall PR #1000.
+          aqtsource: 'git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b'
+          extra: "${{ runner.os == 'Windows' && '--external 7z' || '' }}"
+          archives: "${{ runner.os == 'Linux' && 'qtbase qtdeclarative qtshadertools icu' || 'qtbase qtdeclarative qtshadertools' }}"
+          cache: true
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --parallel 2
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure --output-junit junit.xml
+      - name: QML lint
+        run: cmake --build build --config Release --target LidarMcztDevice_qmllint
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: '${{ matrix.os }}-diagnostics'
+          path: |
+            build/junit.xml
+            build/Testing/Temporary/LastTest.log
+            build/CMakeFiles/CMakeConfigureLog.yaml
+  windows-native:
+    if: github.event_name == 'workflow_dispatch' && inputs.windows_native
+    runs-on: [self-hosted, Windows, X64, handlecore-pcap]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Build and test with prepared Qt and native dependencies
+        shell: pwsh
+        run: |
+          if (-not $env:HANDLECORE_CI_PREFIX_PATH) { throw 'Set HANDLECORE_CI_PREFIX_PATH first' }
+          cmake -S . -B build "-DCMAKE_PREFIX_PATH=$env:HANDLECORE_CI_PREFIX_PATH"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cmake --build build --config Release --parallel 2
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          ctest --test-dir build -C Release --output-on-failure
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
