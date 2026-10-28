@@ -52,7 +52,7 @@ class McztDevice final
     QML_ELEMENT
     QML_ATTACHED(McztDevice)
     QML_UNCREATABLE("由对应 QML 官邸创建和拥有")
-    // 连接与控制分区只编辑 QML 官邸；后端接收本次提交的参数。
+    // 连接只接收网卡下标；线路参数固定在 McztConfig。
     // 速度设置仅在 QML 官邸；命令和任务工厂显式接收本次值。
     // 标定整值从族层读取；固定行程随 QML 模板按值交入，不另存设备属性。
 
@@ -215,10 +215,10 @@ private:
 public:
     using GMBDevice::setMounting;
 public Q_SLOTS:
-    bool open(const int interfaceIndex, const QString &hostIP, const int hostPort,
-              const QString &deviceIP, const int devicePort)
+    bool open(const int interfaceIndex)
     {
-        const auto params = PcapForm::parseParameters(this->device().logSource(), interfaceIndex, hostIP, hostPort, deviceIP, devicePort,
+        const auto params = PcapForm::parseParameters(this->device().logSource(), interfaceIndex,
+            McztConfig::hostIPv4, McztConfig::hostPort, McztConfig::deviceIPv4, McztConfig::devicePort,
             std::nullopt, GMBDevice::kPcapReadTimeout, GMBDevice::kPcapKernelBufferBytes);
         return params && this->device().open(*params);
     }

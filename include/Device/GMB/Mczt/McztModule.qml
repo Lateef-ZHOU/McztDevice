@@ -3,6 +3,7 @@ import QtQuick
 import Lidar.UI
 import Lidar.TaskUI
 import QtQuick.Controls
+import QtQuick.Layouts
 
 // 末端页面独持具体型号后端，在这里连接业务、图窗与控制分区。
 ModulePage {
@@ -11,13 +12,8 @@ ModulePage {
     readonly property GMBDeviceBase family: internals.device
     sections: [connectionSection, positioningSection, modelControlSection].filter(item => item !== null)
     function worldHistory(begin, end) { return angles ? angles.worldHistory(begin, end) : undefined }
-    // 待连接表单；编辑不修改 Handle 的运行快照。
+    // 界面只选择本机网卡；其他连接参数固定在型号配置中。
     property int networkInterfaceIndex: internals.connectionParameters.networkInterfaceDefault
-    property string hostIPv4: internals.connectionParameters.hostIPv4Default
-    property int hostPort: internals.connectionParameters.hostPortDefault
-    property string deviceIPv4: internals.connectionParameters.deviceIPv4Default
-    property int devicePort: internals.connectionParameters.devicePortDefault
-    property string deviceMAC: internals.connectionParameters.deviceMACDefault
     property real panSpeed: internals.controlParameters.panSpeedDefault
     property real tiltSpeed: internals.controlParameters.tiltSpeedDefault
     function moveParameters() { return ({ panSpeed: root.panSpeed, tiltSpeed: root.tiltSpeed }) }
@@ -29,10 +25,37 @@ ModulePage {
             configuration: internals.device.chartParameters().configuration
         }
     }]
-    readonly property Section connectionSection: PcapCard {
-        device: internals.device
-        settings: root
-        parameters: internals.connectionParameters
+    readonly property Section connectionSection: Section {
+        title: qsTr("设备连接")
+        FieldRow {
+            label: qsTr("网卡")
+            ChoiceField {
+                Layout.fillWidth: true
+                model: internals.connectionParameters.networkInterfaceOptions
+                tips: internals.connectionParameters.networkInterfaceTips
+                value: root.networkInterfaceIndex
+                onCommitted: i => root.networkInterfaceIndex = i
+            }
+        }
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            opacity: 0.6
+            text: qsTr("%1:%2 ↔ %3:%4")
+                .arg(internals.connectionParameters.deviceIPv4Default).arg(internals.connectionParameters.devicePortDefault)
+                .arg(internals.connectionParameters.hostIPv4Default).arg(internals.connectionParameters.hostPortDefault)
+        }
+        RowLayout {
+            Button {
+                Layout.fillWidth: true
+                text: qsTr("连接")
+                onClicked: {
+                    if (internals.device.open(root.networkInterfaceIndex))
+                        root.logMessage(qsTr("连接请求已提交"))
+                }
+            }
+            Button { Layout.fillWidth: true; text: qsTr("断开"); onClicked: internals.device.close() }
+        }
     }
     readonly property Section positioningSection: GimbalSection {
         device: internals.device

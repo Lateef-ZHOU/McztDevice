@@ -36,7 +36,7 @@ static constexpr double panSpeedDefault = McztVocab::PanSpeedMax;   // °/s
 static constexpr double tiltSpeedDefault = McztVocab::TiltSpeedMax; // °/s
 static constexpr double speedStep = 0.1; // 协议分辨率即最小步距
 
-// ── 网口默认值 ──────────────────────────────────────────────────
+// ── 型号固定网口参数；界面只选择本机网卡 ─────────────────────────
 // 出处：协议文档"伺服 192.168.6.6:2000 ← 控制主机 192.168.6.10:1000"（见 McztVocab 头注）。
 // 伺服 MAC 协议未给：官邸传空，连上后由 ARP 学到。
 static constexpr auto deviceIPv4 = "192.168.6.6";

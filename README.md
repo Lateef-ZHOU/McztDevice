@@ -1,5 +1,7 @@
 # McztDevice
 
+2026-10-28 连接显示整理（用户定）：型号固定连接参数：设备 192.168.6.6:2000，本机 192.168.6.10:1000；不指定 MAC，继续 ARP 学习。QML 仅保存网卡下标，open(interfaceIndex) 使用 McztConfig 构参；连接区显示只读“设备端点 ↔ 本机端点”，不显示 MAC。
+
 LiDAR 的独立官邸：具体 C++ 后端、Collector/协议/处理逻辑及其 QML 页面在同一仓库维护。来自 LiDAR_DataACQ master `5cc6d65`，本次分仓不改变运行行为。
 
 ## 边界与接入
@@ -28,3 +30,5 @@ cmake --build build --config Release --target LidarMcztDevice_qmllint
 MIT，Copyright (c) 2026 周涛（ZHOU TAO）。Qt、libserialport、libpcap/Npcap 等依赖各自授权，MIT 不替代这些许可；详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。本仓库不包含第三方 SDK、运行库或驱动。
 
 CI：托管 Linux 自动验证；Windows 原生依赖使用预装 SDK/运行时的自托管入口，默认跳过不代表通过。本机 Windows 验证记录与主程序分仓记录一起保存。
+
+本轮本机验证（2026-10-28）：Windows Qt 6.11.2 Release 构建、CMake qmllint 和既有页面冒烟 1/1 通过，无编译或 QML 警告。日志：build/build-connection-summary.log、build/test-connection-summary.log。未打开实物连接，未重复 Linux 验证。
