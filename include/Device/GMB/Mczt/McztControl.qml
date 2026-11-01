@@ -32,7 +32,7 @@ Section {
                       value: root.settings.panSpeed
                       onCommitted: function (v) {
                           if (v === root.settings.panSpeed) return
-                          if (root.settings.isLocked) {
+                          if (root.settings.deviceState.isLocked) {
                               root.settings.logMessage(qsTr("设备正被占用，水平速度未改"))
                               return
                           }
@@ -48,7 +48,7 @@ Section {
                       value: root.settings.tiltSpeed
                       onCommitted: function (v) {
                           if (v === root.settings.tiltSpeed) return
-                          if (root.settings.isLocked) {
+                          if (root.settings.deviceState.isLocked) {
                               root.settings.logMessage(qsTr("设备正被占用，俯仰速度未改"))
                               return
                           }
