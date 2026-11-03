@@ -1,5 +1,7 @@
 # McztDevice
 
+2026-11-03 上传接口：官邸仍拥有唯一具体 Core；Core 继承 `Device<HandleT, CollectorT>`，Device 直接继承 Handle 并重写 onData。Core 只提供 Qt 属性、锁信号与末端预析构；不增设上传回调、状态缓存或逐包信号转发。协议、Collector 与 UI 逻辑保持。
+
 2026-10-28 连接显示整理（用户定）：型号固定连接参数：设备 192.168.6.6:2000，本机 192.168.6.10:1000；不指定 MAC，继续 ARP 学习。QML 仅保存网卡下标，open(interfaceIndex) 使用 McztConfig 构参；连接区显示只读“设备端点 ↔ 本机端点”，不显示 MAC。
 
 LiDAR 的独立官邸：具体 C++ 后端、Collector/协议/处理逻辑及其 QML 页面在同一仓库维护。来自 LiDAR_DataACQ master `5cc6d65`，本次分仓不改变运行行为。
@@ -36,3 +38,6 @@ CI：托管 Linux 自动验证；Windows 原生依赖使用预装 SDK/运行时�
 ## 资源阶段通知（2026-11-02）
 
 连接采用 HandleCore 的 `connectionChanged(ResourcePhase)`；主动关闭前在所属线程同步发 `AboutToRelease`，完成事件用于回读现状。页面借出已有 `deviceState` 机制对象，不再保存 isOpen/isLocked/holder 的 QML 转交属性；标签通过连接/锁完成阶段回读，不恢复通用 statusChanged。固定依赖已同步；本轮提交尚未推送，验证使用显式本地源码覆盖。
+
+
+2026-11-03 验证：Windows Qt 6.11.2 主程序 Release 编译、15 组 QML 检查、跨官邸生命周期和三任务回归 7/7 通过。接口联调使用相邻源码覆盖，新依赖固定为本地提交，尚未推送；未连接实物设备或更新板卡。

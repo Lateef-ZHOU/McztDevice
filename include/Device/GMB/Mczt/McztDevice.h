@@ -40,11 +40,30 @@
 // 位，上行的 BIT 状态字也分方位告警（10 位）与俯仰告警（11 位）。故动作口都按逐轴意图成帧
 // （动一根轴时另一根给 Hold），不设"两轴同档同参"的便捷口。告警复位、标零两档协议有、本机没有客户，词典只留档位。
 // ============================================================
+// Qt 元对象末端：Handle 与 Device 共用一个 QObject；析构先等上传退出。
+class McztCore final : public Device<PcapHandle, McztCollector>
+{
+    Q_OBJECT
+    Q_PROPERTY(QString displayName READ displayName CONSTANT)
+    Q_PROPERTY(QString subtitle READ subtitle CONSTANT)
+    Q_PROPERTY(QObject *logSource READ logSourceObject CONSTANT)
+    Q_PROPERTY(bool isOpen READ isOpen)
+    Q_PROPERTY(bool isLocked READ isLocked)
+    Q_PROPERTY(QString holder READ holder)
+public:
+    using Device::Device;
+    ~McztCore() override { PreDestruction(); }
+Q_SIGNALS:
+    void lockChanged(HandleCore::ResourcePhase phase) override;
+private:
+    void PreDestruction() noexcept final { Device::PreDestruction(); }
+};
+
 class McztDevice final
 #ifdef Q_MOC_RUN
     : public GMBDeviceBase // 模板层继承的族级元对象。
 #else
-    : public GMBDevice<PcapHandle, McztCollector>
+    : public GMBDevice<McztCore>
 #endif
 {
     Q_OBJECT
