@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
 
-#include "Device/GMB/Mczt/McztVocab.h" // 速度上限（默认值直取它，不另抄数）
+#include "McztVocab.h" // 速度上限（默认值直取它，不另抄数）
 
 // ============================================================
 // McztConfig — MCZT46 云台常量店（编译期常量；型号夹宪法，对齐 SqafConfig / HfnlConfig）：

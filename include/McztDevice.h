@@ -10,11 +10,11 @@
 #include <QUrl>
 #include <QVariantMap>
 
-#include "Algorithm/Geometry/GimbalModel.h"                     // PanTiltModel（造斗收的目标位形）
-#include "Device/PcapForm.h"
-#include "Device/GMB/GMBDevice.h"                  // 云台族两层（族基 GMBDeviceBase + 族层 GMBDevice）
-#include "Device/GMB/Mczt/McztConfig.h"         // 型号夹宪法
-#include "Device/GMB/Mczt/McztRunSide.h"        // 运行侧：两轴意图 + 意图 → 指令
+#include "GimbalModel.h"                     // PanTiltModel（造斗收的目标位形）
+#include "PcapForm.h"
+#include "GMBDevice.h"                  // 云台族两层（族基 GMBDeviceBase + 族层 GMBDevice）
+#include "McztConfig.h"         // 型号夹宪法
+#include "McztRunSide.h"        // 运行侧：两轴意图 + 意图 → 指令
 
 // ============================================================
 // McztDevice.h — MCZT46 电机云台型号夹的**官邸**（运行侧住 McztRunSide.h，词典住

@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <memory>
 #include <QPointer>
-#include "Device/Base/DeviceBase.h"
+#include "DeviceBase.h"
 Q_IMPORT_QML_PLUGIN(LidarUIPlugin)
 Q_IMPORT_QML_PLUGIN(LidarChartsPlugin)
 Q_IMPORT_QML_PLUGIN(LidarTaskUIPlugin)

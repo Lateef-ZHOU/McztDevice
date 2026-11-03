@@ -1,11 +1,11 @@
 #pragma once
-#include "Device/GMB/GMBCollector.h"
+#include "GMBCollector.h"
 #include <QByteArray>
 #include <QList>
 #include <QtEndian>
 #include <QtGlobal>
 
-#include "Device/GMB/Mczt/McztVocab.h" // 协议实现层：帧常量 + AxisCmd + 角速度↔码 + 累加和
+#include "McztVocab.h" // 协议实现层：帧常量 + AxisCmd + 角速度↔码 + 累加和
 
 
 // ── AxisMeta / McztPanMeta / McztTiltMeta：**一轴的意图**，两轴各一份 ────────────────
