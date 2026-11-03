@@ -79,8 +79,7 @@ public:
     static McztDevice *qmlAttachedProperties(QObject *owner) { return new McztDevice(owner); }
     [[nodiscard]] QVariantMap connectionParameters() const
     {
-        return PcapForm::connectionParameters(McztConfig::hostIPv4, McztConfig::hostPort,
-                                                McztConfig::deviceIPv4, McztConfig::devicePort, std::nullopt);
+        return PcapForm::connectionParameters();
     }
     Q_INVOKABLE QVariantMap positioningParameters() const
     {

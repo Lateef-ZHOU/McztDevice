@@ -1,8 +1,12 @@
 # McztDevice
 
+2026-11-03 用户定：网口连接区仅保留网卡选择和连接/断开，删除 IP、端口等固定参数展示及对应 QML 参数字段；实际连接配置、校验、ARP 和收发关闭行为保持。
+
+Windows 验证：通过主程序本地源码覆盖增量构建，五个网口官邸 qmllint 目标成功；仍有 QObject 属性类型的既有静态提示。八秒离屏冒烟通过，仅既有字体提示；未进行硬件操作或 Linux 验证。证据：LiDAR_DataACQ/build/build-network-ui.log、smoke-network-ui.json。
+
 2026-11-03 上传接口：官邸仍拥有唯一具体 Core；Core 继承 `Device<HandleT, CollectorT>`，Device 直接继承 Handle 并重写 onData。Core 只提供 Qt 属性、锁信号与末端预析构；不增设上传回调、状态缓存或逐包信号转发。协议、Collector 与 UI 逻辑保持。
 
-2026-10-28 连接显示整理（用户定）：型号固定连接参数：设备 192.168.6.6:2000，本机 192.168.6.10:1000；不指定 MAC，继续 ARP 学习。QML 仅保存网卡下标，open(interfaceIndex) 使用 McztConfig 构参；连接区显示只读“设备端点 ↔ 本机端点”，不显示 MAC。
+2026-10-28 连接显示整理（用户定）：型号固定连接参数：设备 192.168.6.6:2000，本机 192.168.6.10:1000；不指定 MAC，继续 ARP 学习。QML 仅保存网卡下标，open(interfaceIndex) 使用 McztConfig 构参；连接区只提供网卡选择和连接/断开。
 
 LiDAR 的独立官邸：具体 C++ 后端、Collector/协议/处理逻辑及其 QML 页面在同一仓库维护。来自 LiDAR_DataACQ master `5cc6d65`，本次分仓不改变运行行为。
 
