@@ -46,7 +46,6 @@ class McztCore final : public Device<PcapHandle, McztCollector>
     Q_OBJECT
     Q_PROPERTY(QString displayName READ displayName CONSTANT)
     Q_PROPERTY(QString subtitle READ subtitle CONSTANT)
-    Q_PROPERTY(QObject *logSource READ logSourceObject CONSTANT)
     Q_PROPERTY(bool isOpen READ isOpen)
     Q_PROPERTY(bool isLocked READ isLocked)
     Q_PROPERTY(QString holder READ holder)
@@ -131,7 +130,7 @@ private:
     {
         if (!std::isfinite(value))
         {
-            Q_EMIT this->device().logSource().logMessage(QStringLiteral("云台速度不是有限数，未下发"));
+            Q_EMIT this->device().logMessage(QStringLiteral("云台速度不是有限数，未下发"));
             return std::nullopt;
         }
         const double step = McztConfig::speedStep;
@@ -141,7 +140,7 @@ private:
     {
         if (!parameters.speeds)
         {
-            Q_EMIT this->device().logSource().logMessage(QStringLiteral("铭辰定位缺少两轴速度，未下发"));
+            Q_EMIT this->device().logMessage(QStringLiteral("铭辰定位缺少两轴速度，未下发"));
             return std::nullopt;
         }
         const auto pan = commandSpeed(parameters.speeds->pan, McztVocab::PanSpeedMax);
@@ -206,9 +205,9 @@ private:
         const QString cleared = names(static_cast<quint16>(status_ & ~status));
         status_ = status;
         if (!raised.isEmpty())
-            Q_EMIT this->device().logSource().logMessage(QStringLiteral("云台报警：") + raised);
+            Q_EMIT this->device().logMessage(QStringLiteral("云台报警：") + raised);
         if (!cleared.isEmpty())
-            Q_EMIT this->device().logSource().logMessage(QStringLiteral("报警解除：") + cleared);
+            Q_EMIT this->device().logMessage(QStringLiteral("报警解除：") + cleared);
     }
 
     quint16 status_ = 0; // [仅 worker] 上一帧的 BIT 状态字（只为判变化）
@@ -235,7 +234,7 @@ public:
 public Q_SLOTS:
     bool open(const int interfaceIndex)
     {
-        const auto params = PcapForm::parseParameters(this->device().logSource(), interfaceIndex,
+        const auto params = PcapForm::parseParameters(this->device(), interfaceIndex,
             McztConfig::hostIPv4, McztConfig::hostPort, McztConfig::deviceIPv4, McztConfig::devicePort,
             std::nullopt, GMBDevice::kPcapReadTimeout, GMBDevice::kPcapKernelBufferBytes);
         return params && this->device().open(*params);
@@ -248,7 +247,7 @@ public Q_SLOTS:
     }
     bool setMounting(const double azimuth, const double elevation, const double roll)
     {
-        return GMBDeviceBase::setMounting(WorldModel(azimuth, elevation, roll), {});
+        return GMBDevice::setMounting(WorldModel(azimuth, elevation, roll), {});
     }
     bool issueStop() override { return issue(McztPanMeta::stop(), McztTiltMeta::stop()); }
 
@@ -285,7 +284,7 @@ private:
     {
         if (!McztVocab::withinTravel(pan, tilt))
         {
-            Q_EMIT this->device().logSource().logMessage(QStringLiteral("云台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
+            Q_EMIT this->device().logMessage(QStringLiteral("云台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
             return false;
         }
         return this->device().send(McztVocab::startOf(pan, tilt), {}); // 空令牌 = 我不持锁；与 Collector 共用成帧
