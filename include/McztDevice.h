@@ -44,11 +44,10 @@
 class McztCore final : public Device<PcapHandle, McztCollector>
 {
     Q_OBJECT
-    Q_PROPERTY(QString displayName READ displayName CONSTANT)
-    Q_PROPERTY(QString subtitle READ subtitle CONSTANT)
+    Q_PROPERTY(QString displayName MEMBER displayName CONSTANT)
+    Q_PROPERTY(QString subtitle MEMBER subtitle CONSTANT)
     Q_PROPERTY(bool isOpen READ isOpen)
-    Q_PROPERTY(bool isLocked READ isLocked)
-    Q_PROPERTY(QString holder READ holder)
+    Q_PROPERTY(QVariant holder READ qmlHolder)
 public:
     using Device::Device;
     ~McztCore() override { PreDestruction(); }
