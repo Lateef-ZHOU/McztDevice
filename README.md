@@ -63,3 +63,8 @@ CI：托管 Linux 自动验证；Windows 原生依赖使用预装 SDK/运行时�
 本轮仅本地整理；集成验证记录见主程序 docs/maintenance/validation.md，不推送。
 
 2026-11-05 表单统一（用户定）：扇扫及循环操作接入 DoubleButtonRow，复合输入列采用 FieldStrip 权重；保留既定组间距与协议不支持的俯仰循环占位。 公共视觉规格由 UICore 提供，不增加业务状态。Windows 主程序增量构建、八秒离屏冒烟通过；固定依赖在本地更新，暂不推送。
+
+
+### 2026-11-05 公共视觉与连接布局
+
+连接区使用 UICore ConnectionSection，小标题/说明使用 Subheading/HintText；速度、定位和连接动作仍由官邸管理。 本轮仅本地整理，未推送；Windows 集成验证记录见主程序维护操作。

@@ -22,9 +22,8 @@ Section {
     required property real tiltMax
     title: qsTr("设备控制")
 
-    Label {
+    Subheading {
         text: qsTr("速度")
-        font.bold: true
     }
     // 控件按协议步距提交；占用时保留原值，SliderField 随后回读。C++ 发令时仍校验、量化。
     FieldRow {
@@ -70,9 +69,8 @@ Section {
         }
     }
 
-    Label {
+    Subheading {
         text: qsTr("扇扫与循环")
-        font.bold: true
         Layout.topMargin: 6
     }
     // **C++ 侧零存储**：四个角只在点「扇扫」那一刻被读，故住界面，点按钮时当实参递下去。
@@ -165,13 +163,8 @@ Section {
             }
         }
     }
-    Label {
+    HintText {
         text: qsTr("俯仰轴没有循环档（协议不支持）。")
-        color: palette.placeholderText
-        font.pointSize: 9
-        wrapMode: Text.Wrap
-        Layout.preferredWidth: 1 // 换行文字的 implicitWidth 是「整段不折行」的宽度，会顶爆列宽
-        Layout.fillWidth: true
     }
 
     // 与「状态与定位」那颗是同一个动作（issueStop），故名字也一样——

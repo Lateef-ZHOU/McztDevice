@@ -11,41 +11,51 @@ ModulePage {
     readonly property string kind: "device"
     readonly property GMBDeviceBase family: internals.device
     sections: [connectionSection, positioningSection, modelControlSection].filter(item => item !== null)
-    function worldHistory(begin, end) { return angles ? angles.worldHistory(begin, end) : undefined }
+    function worldHistory(begin, end) {
+        return angles ? angles.worldHistory(begin, end) : undefined;
+    }
     // 界面只选择本机网卡；其他连接参数固定在型号配置中。
     property int networkInterfaceIndex: internals.connectionParameters.networkInterfaceDefault
     property real panSpeed: internals.controlParameters.panSpeedDefault
     property real tiltSpeed: internals.controlParameters.tiltSpeedDefault
-    function moveParameters() { return ({ panSpeed: root.panSpeed, tiltSpeed: root.tiltSpeed }) }
-    mainPages: [Page {
-        title: qsTr("角度")
-        contentItem: GimbalCharts {
-            id: angles
-            device: internals.device
-            configuration: internals.device.chartParameters().configuration
+    function moveParameters() {
+        return ({
+                panSpeed: root.panSpeed,
+                tiltSpeed: root.tiltSpeed
+            });
+    }
+    mainPages: [
+        Page {
+            title: qsTr("角度")
+            contentItem: GimbalCharts {
+                id: angles
+                device: internals.device
+                configuration: internals.device.chartParameters().configuration
+            }
         }
-    }]
-    readonly property Section connectionSection: Section {
+    ]
+    readonly property Section connectionSection: ConnectionSection {
         title: qsTr("设备连接")
-        FieldRow {
-            label: qsTr("网卡")
-            ChoiceField {
-                Layout.fillWidth: true
-                model: internals.connectionParameters.networkInterfaceOptions
-                tips: internals.connectionParameters.networkInterfaceTips
-                value: root.networkInterfaceIndex
-                onCommitted: i => root.networkInterfaceIndex = i
+
+        label: qsTr("网卡")
+        ChoiceField {
+            Layout.fillWidth: true
+            model: internals.connectionParameters.networkInterfaceOptions
+            tips: internals.connectionParameters.networkInterfaceTips
+            value: root.networkInterfaceIndex
+            onCommitted: i => root.networkInterfaceIndex = i
+        }
+
+        firstAction: Action {
+            text: qsTr("连接")
+            onTriggered: {
+                if (internals.device.open(root.networkInterfaceIndex))
+                    root.logMessage(qsTr("连接请求已提交"));
             }
         }
-        DoubleButtonRow {
-            firstAction: Action {
-                text: qsTr("连接")
-                onTriggered: {
-                    if (internals.device.open(root.networkInterfaceIndex))
-                        root.logMessage(qsTr("连接请求已提交"))
-                }
-            }
-            secondAction: Action { text: qsTr("断开"); onTriggered: internals.device.close() }
+        secondAction: Action {
+            text: qsTr("断开")
+            onTriggered: internals.device.close()
         }
     }
     readonly property Section positioningSection: GimbalSection {
@@ -80,6 +90,8 @@ ModulePage {
     }
     Connections {
         target: internals.device.device
-        function onLogMessage(text): void { root.logMessage(text) }
+        function onLogMessage(text): void {
+            root.logMessage(text);
+        }
     }
 }
