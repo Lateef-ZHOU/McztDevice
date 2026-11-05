@@ -96,7 +96,7 @@ public:
     ~McztDevice() override { PreDestruction(); }
 
     // 角一律本机定义（俯仰：水平 = 0、抬头为正）：码↔角的换算在 McztVocab，这里、界面、任务都只见本机角。
-    explicit McztDevice(QObject *parent) : GMBDevice(QStringLiteral("铭辰云台"), QStringLiteral("网口 · UDP"), parent)
+    explicit McztDevice(QObject *parent) : GMBDevice(QStringLiteral("转台·铭辰机电"), QStringLiteral("MCZT46"), parent)
     {
         setObjectName(QStringLiteral("Mczt")); // ASCII 标识：落盘会话目录名用
     }
@@ -129,7 +129,7 @@ private:
     {
         if (!std::isfinite(value))
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("云台速度不是有限数，未下发"));
+            Q_EMIT this->device().logMessage(QStringLiteral("转台速度不是有限数，未下发"));
             return std::nullopt;
         }
         const double step = McztConfig::speedStep;
@@ -180,7 +180,7 @@ private:
     }
 
     // [worker] BIT 状态字 → 报警日志（协议：故障 / 限位 / 告警各占一位）。**只在变化时记**——上报 100 Hz，
-    // 逐帧记会淹没日志：新置位的记"云台报警"，清除的记"报警解除"。出生态全零 = 无报警，故上电即带着的
+    // 逐帧记会淹没日志：新置位的记"转台报警"，清除的记"报警解除"。出生态全零 = 无报警，故上电即带着的
     // 报警在首帧就记。
     // **协议表没列的位也记**：没名字的按原始值记一条「未列位 0xNNNN」。不认没列的位，就分不清
     // "伺服没置位"与"置了我们不认的位"（实机遇到过：俯仰压到限位却一条报警都没有）——这种"看不见"
@@ -204,7 +204,7 @@ private:
         const QString cleared = names(static_cast<quint16>(status_ & ~status));
         status_ = status;
         if (!raised.isEmpty())
-            Q_EMIT this->device().logMessage(QStringLiteral("云台报警：") + raised);
+            Q_EMIT this->device().logMessage(QStringLiteral("转台报警：") + raised);
         if (!cleared.isEmpty())
             Q_EMIT this->device().logMessage(QStringLiteral("报警解除：") + cleared);
     }
@@ -283,7 +283,7 @@ private:
     {
         if (!McztVocab::withinTravel(pan, tilt))
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("云台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
+            Q_EMIT this->device().logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
             return false;
         }
         return this->device().send(McztVocab::startOf(pan, tilt), {}); // 空令牌 = 我不持锁；与 Collector 共用成帧
