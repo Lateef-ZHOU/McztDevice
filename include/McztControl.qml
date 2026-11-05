@@ -129,38 +129,34 @@ Section {
         }
     }
     // 按轴分两列、按动作分两行：上排扇扫、下排循环，右下那格是本台**没有**的档。
-    ColumnLayout {
-        Layout.fillWidth: true
-        spacing: FormStyle.rowSpacing
-        DoubleButtonRow {
-            firstAction: Action {
-                text: qsTr("水平扇扫")
-                onTriggered: if (root.device.scanPan(panFrom.value, panTo.value, root.settings.panSpeed))
-                    root.settings.logMessage(qsTr("已下发：水平扇扫 %1° → %2°").arg(panFrom.value.toFixed(2)).arg(panTo.value.toFixed(2)))
-            }
-
-            secondAction: Action {
-                text: qsTr("俯仰扇扫")
-                onTriggered: if (root.device.scanTilt(tiltLo.value, tiltHi.value, root.settings.tiltSpeed))
-                    root.settings.logMessage(qsTr("已下发：俯仰扇扫 %1° ~ %2°").arg(tiltLo.value.toFixed(2)).arg(tiltHi.value.toFixed(2)))
-            }
+    DoubleButtonRow {
+        firstAction: Action {
+            text: qsTr("水平扇扫")
+            onTriggered: if (root.device.scanPan(panFrom.value, panTo.value, root.settings.panSpeed))
+                root.settings.logMessage(qsTr("已下发：水平扇扫 %1° → %2°").arg(panFrom.value.toFixed(2)).arg(panTo.value.toFixed(2)))
         }
-        DoubleButtonRow {
 
-            firstAction: Action {
-                text: qsTr("水平循环")
-                onTriggered: if (root.device.rotatePan(root.settings.panSpeed))
-                    root.settings.logMessage(qsTr("已下发：水平循环 %1°/s").arg(root.settings.panSpeed.toFixed(1)))
-            }
+        secondAction: Action {
+            text: qsTr("俯仰扇扫")
+            onTriggered: if (root.device.scanTilt(tiltLo.value, tiltHi.value, root.settings.tiltSpeed))
+                root.settings.logMessage(qsTr("已下发：俯仰扇扫 %1° ~ %2°").arg(tiltLo.value.toFixed(2)).arg(tiltHi.value.toFixed(2)))
+        }
+    }
+    DoubleButtonRow {
 
-            // **这个 disable 不是交互门控**（那条纪律禁的是"按运行状态动态启停"）：俯仰轴**根本没有
-            // 循环档**——协议如此，McztTiltMeta 连 rotate() 都没有、
-            // 写了当场编不过。摆一个灰的而不是干脆不摆，是为了让人看得见"这一格是空的"，
-            // 免得对着三个按钮猜第四个去哪了。
-            secondAction: Action {
-                text: qsTr("俯仰循环")
-                enabled: false
-            }
+        firstAction: Action {
+            text: qsTr("水平循环")
+            onTriggered: if (root.device.rotatePan(root.settings.panSpeed))
+                root.settings.logMessage(qsTr("已下发：水平循环 %1°/s").arg(root.settings.panSpeed.toFixed(1)))
+        }
+
+        // **这个 disable 不是交互门控**（那条纪律禁的是"按运行状态动态启停"）：俯仰轴**根本没有
+        // 循环档**——协议如此，McztTiltMeta 连 rotate() 都没有、
+        // 写了当场编不过。摆一个灰的而不是干脆不摆，是为了让人看得见"这一格是空的"，
+        // 免得对着三个按钮猜第四个去哪了。
+        secondAction: Action {
+            text: qsTr("俯仰循环")
+            enabled: false
         }
     }
     HintText {

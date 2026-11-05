@@ -68,3 +68,10 @@ CI：托管 Linux 自动验证；Windows 原生依赖使用预装 SDK/运行时�
 ### 2026-11-05 公共视觉与连接布局
 
 连接区使用 UICore ConnectionSection，小标题/说明使用 Subheading/HintText；速度、定位和连接动作仍由官邸管理。 本轮仅本地整理，未推送；Windows 集成验证记录见主程序维护操作。
+
+
+### 2026-11-05 按钮气泡与布局复用
+
+扇扫和循环两排 DoubleButtonRow 直接交给 Section 排列，删除仅重复设置公共行距的 ColumnLayout。动作、禁用的俯仰循环格、停止按钮前间距不变。
+
+主程序Windows Release增量构建、八秒桌面冒烟与四窗口装配检查通过，运行stderr为空。未连接硬件，仅本地提交、未推送。
