@@ -22,42 +22,59 @@ Section {
     required property real tiltMax
     title: qsTr("设备控制")
 
-    Label { text: qsTr("速度"); font.bold: true }
+    Label {
+        text: qsTr("速度")
+        font.bold: true
+    }
     // 控件按协议步距提交；占用时保留原值，SliderField 随后回读。C++ 发令时仍校验、量化。
     FieldRow {
         label: qsTr("水平速度（°/s）")
-        SliderField { Layout.fillWidth: true; decimals: 1
-                      from: root.parameters.speedStep; to: root.parameters.panSpeedMax
-                      stepSize: root.parameters.speedStep
-                      value: root.settings.panSpeed
-                      onCommitted: function (v) {
-                          if (v === root.settings.panSpeed) return
-                          if (root.settings.deviceState.holder !== undefined && root.settings.deviceState.holder !== null) {
-                              root.settings.logMessage(qsTr("设备正被占用，水平速度未改"))
-                              return
-                          }
-                          root.settings.panSpeed = v
-                          root.settings.logMessage(qsTr("水平速度：%1 °/s").arg(v.toFixed(1)))
-                      } }
+        SliderField {
+            Layout.fillWidth: true
+            decimals: 1
+            from: root.parameters.speedStep
+            to: root.parameters.panSpeedMax
+            stepSize: root.parameters.speedStep
+            value: root.settings.panSpeed
+            onCommitted: function (v) {
+                if (v === root.settings.panSpeed)
+                    return;
+                if (root.settings.deviceState.holder !== undefined && root.settings.deviceState.holder !== null) {
+                    root.settings.logMessage(qsTr("设备正被占用，水平速度未改"));
+                    return;
+                }
+                root.settings.panSpeed = v;
+                root.settings.logMessage(qsTr("水平速度：%1 °/s").arg(v.toFixed(1)));
+            }
+        }
     }
     FieldRow {
         label: qsTr("俯仰速度（°/s）")
-        SliderField { Layout.fillWidth: true; decimals: 1
-                      from: root.parameters.speedStep; to: root.parameters.tiltSpeedMax
-                      stepSize: root.parameters.speedStep
-                      value: root.settings.tiltSpeed
-                      onCommitted: function (v) {
-                          if (v === root.settings.tiltSpeed) return
-                          if (root.settings.deviceState.holder !== undefined && root.settings.deviceState.holder !== null) {
-                              root.settings.logMessage(qsTr("设备正被占用，俯仰速度未改"))
-                              return
-                          }
-                          root.settings.tiltSpeed = v
-                          root.settings.logMessage(qsTr("俯仰速度：%1 °/s").arg(v.toFixed(1)))
-                      } }
+        SliderField {
+            Layout.fillWidth: true
+            decimals: 1
+            from: root.parameters.speedStep
+            to: root.parameters.tiltSpeedMax
+            stepSize: root.parameters.speedStep
+            value: root.settings.tiltSpeed
+            onCommitted: function (v) {
+                if (v === root.settings.tiltSpeed)
+                    return;
+                if (root.settings.deviceState.holder !== undefined && root.settings.deviceState.holder !== null) {
+                    root.settings.logMessage(qsTr("设备正被占用，俯仰速度未改"));
+                    return;
+                }
+                root.settings.tiltSpeed = v;
+                root.settings.logMessage(qsTr("俯仰速度：%1 °/s").arg(v.toFixed(1)));
+            }
+        }
     }
 
-    Label { text: qsTr("扇扫与循环"); font.bold: true; Layout.topMargin: 6 }
+    Label {
+        text: qsTr("扇扫与循环")
+        font.bold: true
+        Layout.topMargin: 6
+    }
     // **C++ 侧零存储**：四个角只在点「扇扫」那一刻被读，故住界面，点按钮时当实参递下去。
     // **两组角的约束正好相反**，这正是不把"范围输入框"抽成一个控件的理由：
     //   · 水平：起点 / 终点互不约束——方位是环面，150° → 30° 是合法的反向扫；
@@ -66,51 +83,87 @@ Section {
     FieldStrip {
         FieldStrip.Col {
             label: qsTr("水平扇扫（°，起点 → 终点）")
-            Layout.preferredWidth: 160 // 两个框，别把最小宽度报小了
-            RealField { id: panFrom; Layout.fillWidth: true
-                        minimum: root.panMin; maximum: root.panMax
-                        value: 30
-                        onCommitted: function (v) { panFrom.value = v } }
-            RealField { id: panTo; Layout.fillWidth: true
-                        minimum: root.panMin; maximum: root.panMax
-                        value: 150
-                        onCommitted: function (v) { panTo.value = v } }
+            weight: 2
+            RealField {
+                id: panFrom
+                Layout.fillWidth: true
+                minimum: root.panMin
+                maximum: root.panMax
+                value: 30
+                onCommitted: function (v) {
+                    panFrom.value = v;
+                }
+            }
+            RealField {
+                id: panTo
+                Layout.fillWidth: true
+                minimum: root.panMin
+                maximum: root.panMax
+                value: 150
+                onCommitted: function (v) {
+                    panTo.value = v;
+                }
+            }
         }
         FieldStrip.Col {
             label: qsTr("俯仰扇扫（°，下限 ~ 上限）")
-            Layout.preferredWidth: 160
-            RealField { id: tiltLo; Layout.fillWidth: true
-                        minimum: root.tiltMin; maximum: tiltHi.value
-                        value: 10
-                        onCommitted: function (v) { tiltLo.value = v } }
-            RealField { id: tiltHi; Layout.fillWidth: true
-                        minimum: tiltLo.value; maximum: root.tiltMax
-                        value: 60
-                        onCommitted: function (v) { tiltHi.value = v } }
+            weight: 2
+            RealField {
+                id: tiltLo
+                Layout.fillWidth: true
+                minimum: root.tiltMin
+                maximum: tiltHi.value
+                value: 10
+                onCommitted: function (v) {
+                    tiltLo.value = v;
+                }
+            }
+            RealField {
+                id: tiltHi
+                Layout.fillWidth: true
+                minimum: tiltLo.value
+                maximum: root.tiltMax
+                value: 60
+                onCommitted: function (v) {
+                    tiltHi.value = v;
+                }
+            }
         }
     }
     // 按轴分两列、按动作分两行：上排扇扫、下排循环，右下那格是本台**没有**的档。
-    GridLayout {
+    ColumnLayout {
         Layout.fillWidth: true
-        columns: 2
-        columnSpacing: 6
-        rowSpacing: 6
-        Button { Layout.fillWidth: true; text: qsTr("水平扇扫")
-                 onClicked: if (root.device.scanPan(panFrom.value, panTo.value, root.settings.panSpeed))
-                     root.settings.logMessage(qsTr("已下发：水平扇扫 %1° → %2°")
-                         .arg(panFrom.value.toFixed(2)).arg(panTo.value.toFixed(2))) }
-        Button { Layout.fillWidth: true; text: qsTr("俯仰扇扫")
-                 onClicked: if (root.device.scanTilt(tiltLo.value, tiltHi.value, root.settings.tiltSpeed))
-                     root.settings.logMessage(qsTr("已下发：俯仰扇扫 %1° ~ %2°")
-                         .arg(tiltLo.value.toFixed(2)).arg(tiltHi.value.toFixed(2))) }
-        Button { Layout.fillWidth: true; text: qsTr("水平循环")
-                 onClicked: if (root.device.rotatePan(root.settings.panSpeed))
-                     root.settings.logMessage(qsTr("已下发：水平循环 %1°/s").arg(root.settings.panSpeed.toFixed(1))) }
-        // **这个 disable 不是交互门控**（那条纪律禁的是"按运行状态动态启停"）：俯仰轴**根本没有
-        // 循环档**——协议如此，McztTiltMeta 连 rotate() 都没有、
-        // 写了当场编不过。摆一个灰的而不是干脆不摆，是为了让人看得见"这一格是空的"，
-        // 免得对着三个按钮猜第四个去哪了。
-        Button { Layout.fillWidth: true; text: qsTr("俯仰循环"); enabled: false }
+        spacing: FormStyle.rowSpacing
+        DoubleButtonRow {
+            firstAction: Action {
+                text: qsTr("水平扇扫")
+                onTriggered: if (root.device.scanPan(panFrom.value, panTo.value, root.settings.panSpeed))
+                    root.settings.logMessage(qsTr("已下发：水平扇扫 %1° → %2°").arg(panFrom.value.toFixed(2)).arg(panTo.value.toFixed(2)))
+            }
+
+            secondAction: Action {
+                text: qsTr("俯仰扇扫")
+                onTriggered: if (root.device.scanTilt(tiltLo.value, tiltHi.value, root.settings.tiltSpeed))
+                    root.settings.logMessage(qsTr("已下发：俯仰扇扫 %1° ~ %2°").arg(tiltLo.value.toFixed(2)).arg(tiltHi.value.toFixed(2)))
+            }
+        }
+        DoubleButtonRow {
+
+            firstAction: Action {
+                text: qsTr("水平循环")
+                onTriggered: if (root.device.rotatePan(root.settings.panSpeed))
+                    root.settings.logMessage(qsTr("已下发：水平循环 %1°/s").arg(root.settings.panSpeed.toFixed(1)))
+            }
+
+            // **这个 disable 不是交互门控**（那条纪律禁的是"按运行状态动态启停"）：俯仰轴**根本没有
+            // 循环档**——协议如此，McztTiltMeta 连 rotate() 都没有、
+            // 写了当场编不过。摆一个灰的而不是干脆不摆，是为了让人看得见"这一格是空的"，
+            // 免得对着三个按钮猜第四个去哪了。
+            secondAction: Action {
+                text: qsTr("俯仰循环")
+                enabled: false
+            }
+        }
     }
     Label {
         text: qsTr("俯仰轴没有循环档（协议不支持）。")
@@ -129,7 +182,7 @@ Section {
         text: qsTr("立即停止")
         onClicked: {
             if (root.device.issueStop())
-                root.settings.logMessage(qsTr("已下发：停止"))
+                root.settings.logMessage(qsTr("已下发：停止"));
         }
     }
 }

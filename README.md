@@ -61,3 +61,5 @@ CI：托管 Linux 自动验证；Windows 原生依赖使用预装 SDK/运行时�
 设备名称/副标题由构造传入 DeviceBase 的公开 const 成员，Qt 通过 MEMBER CONSTANT 直接暴露；占用查询只保留 holder，Qt 用无效 QVariant 表示空闲、字符串表示占用，删除 isLocked 属性。既有连接、重连、收发和取消逻辑保持。
 
 本轮仅本地整理；集成验证记录见主程序 docs/maintenance/validation.md，不推送。
+
+2026-11-05 表单统一（用户定）：扇扫及循环操作接入 DoubleButtonRow，复合输入列采用 FieldStrip 权重；保留既定组间距与协议不支持的俯仰循环占位。 公共视觉规格由 UICore 提供，不增加业务状态。Windows 主程序增量构建、八秒离屏冒烟通过；固定依赖在本地更新，暂不推送。
