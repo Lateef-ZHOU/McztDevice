@@ -132,16 +132,16 @@ private:
         const double step = McztConfig::speedStep;
         return std::round(std::clamp(value, step, maximum) / step) * step;
     }
-    [[nodiscard]] std::optional<GMBMoveParameters::Speeds> commandSpeeds(const GMBMoveParameters &parameters) const
+    [[nodiscard]] std::optional<GMBMoveParameters::Speeds> commandSpeeds(const std::optional<GMBMoveParameters::Speeds> &speeds) const
     {
-        if (!parameters.speeds)
+        if (!speeds)
         {
             Q_EMIT this->logMessage(QStringLiteral("铭辰定位缺少两轴速度，未下发"));
             return std::nullopt;
         }
-        const auto pan = commandSpeed(parameters.speeds->pan, McztVocab::PanSpeedMax);
+        const auto pan = commandSpeed(speeds->pan, McztVocab::PanSpeedMax);
         if (!pan) return std::nullopt;
-        const auto tilt = commandSpeed(parameters.speeds->tilt, McztVocab::TiltSpeedMax);
+        const auto tilt = commandSpeed(speeds->tilt, McztVocab::TiltSpeedMax);
         if (!tilt) return std::nullopt;
         return GMBMoveParameters::Speeds{*pan, *tilt};
     }
@@ -149,24 +149,25 @@ private:
 public:
     // 型号判据（任务预验、造斗与直发共用）：铭辰定位必须带两轴速度，速度按协议步距量化钳制，
     // 行程按量化后的码值检查。越界或缺速度返回空并记录原因；不造 Collector、不发令。
-    [[nodiscard]] std::optional<GMBMoveParameters> paramsFor(const GMBMoveParameters &draft) const override
+    [[nodiscard]] std::optional<GMBMoveParameters> paramsFor(const PanTiltModel &target, const std::chrono::milliseconds hold,
+        const std::optional<GMBMoveParameters::Speeds> &requested) const override
     {
-        const auto speeds = commandSpeeds(draft);
+        const auto speeds = commandSpeeds(requested);
         if (!speeds) return std::nullopt;
-        if (!McztVocab::withinTravel(McztPanMeta::position(draft.target.pan(), speeds->pan),
-                                     McztTiltMeta::position(draft.target.tilt(), speeds->tilt)))
+        if (!McztVocab::withinTravel(McztPanMeta::position(target.pan(), speeds->pan),
+                                     McztTiltMeta::position(target.tilt(), speeds->tilt)))
         {
             Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
             return std::nullopt;
         }
-        return GMBMoveParameters{draft.target, draft.hold, *speeds};
+        return GMBMoveParameters{target, hold, *speeds};
     }
 
 private:
     // 任务的速度快照在此编码入指令；重试由 Device 按本斗不可变配置 makeSelf，不回读界面。
-    [[nodiscard]] std::shared_ptr<McztCollector> makeMoveCollector(const GMBMoveParameters &draft) const override
+    [[nodiscard]] std::shared_ptr<McztCollector> makeMoveCollector(const GMBMoveParameters &requested) const override
     {
-        const auto parameters = paramsFor(draft);
+        const auto parameters = paramsFor(requested.target, requested.hold, requested.speeds);
         if (!parameters) return nullptr;
         const auto pan = McztPanMeta::position(parameters->target.pan(), parameters->speeds->pan);
         const auto tilt = McztTiltMeta::position(parameters->target.tilt(), parameters->speeds->tilt);
@@ -281,11 +282,10 @@ public Q_SLOTS:
 
 private:
     // 两轴定位使用显式快照；与 Collector 工厂共用 paramsFor 判据。
-    bool issueGoTo(const GMBMoveParameters &draft) override
+    bool issueGoTo(const GMBMoveParameters &parameters) override
     {
-        const auto parameters = paramsFor(draft);
-        return parameters && issue(McztPanMeta::position(parameters->target.pan(), parameters->speeds->pan),
-                                   McztTiltMeta::position(parameters->target.tilt(), parameters->speeds->tilt));
+        return parameters.speeds && issue(McztPanMeta::position(parameters.target.pan(), parameters.speeds->pan),
+                                          McztTiltMeta::position(parameters.target.tilt(), parameters.speeds->tilt));
     }
 
     // 直发一帧（不造斗、不起 run、不拿锁，见上方分区注）。组包前查行程，与造斗同一道 McztVocab::withinTravel：

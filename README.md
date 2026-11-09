@@ -1,6 +1,6 @@
 # McztDevice
 
-2026-11-09 用户定：官邸提供 `paramsFor(draft)`（型号校验与量化，任务预验、造斗与直发共用），makeMoveCollector 与手动 issueGoTo 都收 `GMBMoveParameters` 并复用该判据；删除 collectorFor 与只读原型，Collector 由 begin 直接造出完整对象。
+2026-11-09 用户定：官邸提供 `paramsFor(target, hold, speeds)`（型号校验与量化，任务预验、造斗与直发共用），makeMoveCollector 与手动 issueGoTo 都收 `GMBMoveParameters` 并复用该判据；删除 collectorFor 与只读原型，Collector 由 begin 直接造出完整对象。
 
 2026-11-09 用户定：设备与云台族合为一个对象：末端官邸直接继承 `GMBDevice<HandleT, CollectorT>`（它同时继承 `Device<HandleT, CollectorT>` 与纯 C++ 的 `GMBDeviceBase`），删除中间 Core 类与 `device_` 指针；唯一 QObject 来自 Handle。末端声明 displayName/subtitle/isOpen/holder/mounting/slipRing 属性及 lockChanged/mountingChanged/anglesReady 信号，析构首句预析构只走 Device 链。页面 `family` 改为 `QtObject`，`deviceState`/日志直接指向设备本身，删除 `device.device` 自引用。页面测试新增 family 即后端本身、可交叉转换到族基的断言。
 
