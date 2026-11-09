@@ -40,31 +40,21 @@
 // 位，上行的 BIT 状态字也分方位告警（10 位）与俯仰告警（11 位）。故动作口都按逐轴意图成帧
 // （动一根轴时另一根给 Hold），不设"两轴同档同参"的便捷口。告警复位、标零两档协议有、本机没有客户，词典只留档位。
 // ============================================================
-// Qt 元对象末端：Handle 与 Device 共用一个 QObject；析构先等上传退出。
-class McztCore final : public Device<PcapHandle, McztCollector>
+// Qt 元对象末端：Handle、Device 与云台族共用这一个 QObject；析构首句先停收包再拆派生状态。
+class McztDevice final
+#ifdef Q_MOC_RUN
+    : public PcapHandle // 元对象基类：唯一 QObject 来自 Handle，模板层不加 Q_OBJECT。
+#else
+    : public GMBDevice<PcapHandle, McztCollector>
+#endif
 {
     Q_OBJECT
     Q_PROPERTY(QString displayName MEMBER displayName CONSTANT)
     Q_PROPERTY(QString subtitle MEMBER subtitle CONSTANT)
     Q_PROPERTY(bool isOpen READ isOpen)
     Q_PROPERTY(QVariant holder READ qmlHolder)
-public:
-    using Device::Device;
-    ~McztCore() override { PreDestruction(); }
-Q_SIGNALS:
-    void lockChanged(HandleCore::ResourcePhase phase) override;
-private:
-    void PreDestruction() noexcept final { Device::PreDestruction(); }
-};
-
-class McztDevice final
-#ifdef Q_MOC_RUN
-    : public GMBDeviceBase // 模板层继承的族级元对象。
-#else
-    : public GMBDevice<McztCore>
-#endif
-{
-    Q_OBJECT
+    Q_PROPERTY(WorldModel mounting READ mounting NOTIFY mountingChanged)
+    Q_PROPERTY(bool slipRing READ hasSlipRing CONSTANT)
     Q_PROPERTY(QVariantMap connectionParameters READ connectionParameters CONSTANT)
     QML_ELEMENT
     QML_ATTACHED(McztDevice)
@@ -110,6 +100,13 @@ public:
         return McztVocab::withinAngles(pan, tilt);
     }
 
+Q_SIGNALS:
+    void lockChanged(HandleCore::ResourcePhase phase) override;
+    void mountingChanged(const WorldModel &mounting) override;
+    void anglesReady(RxTime at, double pan, double tilt, double azimuth, double elevation) override;
+
+public:
+
     Q_INVOKABLE QVariantMap controlParameters() const
     {
         return {{"speedStep", McztConfig::speedStep}, {"panSpeedMax", McztVocab::PanSpeedMax},
@@ -129,7 +126,7 @@ private:
     {
         if (!std::isfinite(value))
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("转台速度不是有限数，未下发"));
+            Q_EMIT this->logMessage(QStringLiteral("转台速度不是有限数，未下发"));
             return std::nullopt;
         }
         const double step = McztConfig::speedStep;
@@ -139,7 +136,7 @@ private:
     {
         if (!parameters.speeds)
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("铭辰定位缺少两轴速度，未下发"));
+            Q_EMIT this->logMessage(QStringLiteral("铭辰定位缺少两轴速度，未下发"));
             return std::nullopt;
         }
         const auto pan = commandSpeed(parameters.speeds->pan, McztVocab::PanSpeedMax);
@@ -204,9 +201,9 @@ private:
         const QString cleared = names(static_cast<quint16>(status_ & ~status));
         status_ = status;
         if (!raised.isEmpty())
-            Q_EMIT this->device().logMessage(QStringLiteral("转台报警：") + raised);
+            Q_EMIT this->logMessage(QStringLiteral("转台报警：") + raised);
         if (!cleared.isEmpty())
-            Q_EMIT this->device().logMessage(QStringLiteral("报警解除：") + cleared);
+            Q_EMIT this->logMessage(QStringLiteral("报警解除：") + cleared);
     }
 
     quint16 status_ = 0; // [仅 worker] 上一帧的 BIT 状态字（只为判变化）
@@ -233,12 +230,13 @@ public:
 public Q_SLOTS:
     bool open(const int interfaceIndex)
     {
-        const auto params = PcapForm::parseParameters(this->device(), interfaceIndex,
+        const auto params = PcapForm::parseParameters(*this, interfaceIndex,
             McztConfig::hostIPv4, McztConfig::hostPort, McztConfig::deviceIPv4, McztConfig::devicePort,
             std::nullopt, GMBDevice::kPcapReadTimeout, GMBDevice::kPcapKernelBufferBytes);
-        return params && this->device().open(*params);
+        // 本槽按名遮住 Handle::open；连接参数交给 Handle 本身。
+        return params && PcapHandle::open(*params);
     }
-    void close() { this->device().close(); }
+    void close() { PcapHandle::close(); }
     // Qt 入口接收页面参数；成功只返回结果，文案由 QML 生成。标定三个角一次提交。
     bool issueGoTo(const double pan, const double tilt, const QVariantMap &parameters)
     {
@@ -283,10 +281,10 @@ private:
     {
         if (!McztVocab::withinTravel(pan, tilt))
         {
-            Q_EMIT this->device().logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
+            Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
             return false;
         }
-        return this->device().send(McztVocab::startOf(pan, tilt), {}); // 空令牌 = 我不持锁；与 Collector 共用成帧
+        return this->send(McztVocab::startOf(pan, tilt), {}); // 空令牌 = 我不持锁；与 Collector 共用成帧
     }
 
 };

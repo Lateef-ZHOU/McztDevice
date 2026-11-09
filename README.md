@@ -1,5 +1,7 @@
 # McztDevice
 
+2026-11-09 用户定：设备与云台族合为一个对象：末端官邸直接继承 `GMBDevice<HandleT, CollectorT>`（它同时继承 `Device<HandleT, CollectorT>` 与纯 C++ 的 `GMBDeviceBase`），删除中间 Core 类与 `device_` 指针；唯一 QObject 来自 Handle。末端声明 displayName/subtitle/isOpen/holder/mounting/slipRing 属性及 lockChanged/mountingChanged/anglesReady 信号，析构首句预析构只走 Device 链。页面 `family` 改为 `QtObject`，`deviceState`/日志直接指向设备本身，删除 `device.device` 自引用。页面测试新增 family 即后端本身、可交叉转换到族基的断言。
+
 2026-11-03 用户定：网口连接区仅保留网卡选择和连接/断开，删除 IP、端口等固定参数展示及对应 QML 参数字段；实际连接配置、校验、ARP 和收发关闭行为保持。
 
 Windows 验证：通过主程序本地源码覆盖增量构建，五个网口官邸 qmllint 目标成功；仍有 QObject 属性类型的既有静态提示。八秒离屏冒烟通过，仅既有字体提示；未进行硬件操作或 Linux 验证。证据：LiDAR_DataACQ/build/build-network-ui.log、smoke-network-ui.json。
