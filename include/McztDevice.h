@@ -282,10 +282,11 @@ public Q_SLOTS:
 
 private:
     // 两轴定位使用显式快照；与 Collector 工厂共用 paramsFor 判据。
-    bool issueGoTo(const GMBMoveParameters &parameters) override
+    bool issueGoTo(const std::optional<GMBMoveParameters> &parameters) override
     {
-        return parameters.speeds && issue(McztPanMeta::position(parameters.target.pan(), parameters.speeds->pan),
-                                          McztTiltMeta::position(parameters.target.tilt(), parameters.speeds->tilt));
+        return parameters && parameters->speeds
+            && issue(McztPanMeta::position(parameters->target.pan(), parameters->speeds->pan),
+                     McztTiltMeta::position(parameters->target.tilt(), parameters->speeds->tilt));
     }
 
     // 直发一帧（不造斗、不起 run、不拿锁，见上方分区注）。组包前查行程，与造斗同一道 McztVocab::withinTravel：
