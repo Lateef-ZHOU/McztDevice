@@ -28,7 +28,7 @@
 
 // ============================================================
 // McztDevice — MCZT46 云台设备子类：子夹最高长官（职责对齐 SqafDevice）。四件事：
-//   ① makeMoveCollector 按目标位形及启动时传入的速度快照构造定位 Collector。
+//   ① paramsFor 校验并量化运动参数，makeMoveCollector 据此构造定位 Collector。
 //      逐轴动作（扇扫 / 循环 / 停止）只走设备页直发，不造斗。
 //   ② 常态灶的解析口 decodeStream：上报**不因有没有 run 而中断**；一帧同报两轴，解一次交出实测位形
 //      （回显与喂斗共用）。换世界角、画图、喂斗归族层与机制层。
@@ -146,20 +146,33 @@ private:
         return GMBMoveParameters::Speeds{*pan, *tilt};
     }
 
-    // 任务的速度快照在此编码入指令；循环和重试只复用 Collector，不回读界面。
-    [[nodiscard]] std::shared_ptr<const McztCollector>
-    makeMoveCollector(const PanTiltModel &target, const std::chrono::milliseconds hold,
-                      const GMBMoveParameters &parameters) const override
+public:
+    // 型号判据（任务预验、造斗与直发共用）：铭辰定位必须带两轴速度，速度按协议步距量化钳制，
+    // 行程按量化后的码值检查。越界或缺速度返回空并记录原因；不造 Collector、不发令。
+    [[nodiscard]] std::optional<GMBMoveParameters> paramsFor(const GMBMoveParameters &draft) const override
     {
-        const auto speeds = commandSpeeds(parameters);
-        if (!speeds) return nullptr;
-        const auto pan = McztPanMeta::position(target.pan(), speeds->pan);
-        const auto tilt = McztTiltMeta::position(target.tilt(), speeds->tilt);
-        if (!McztVocab::withinTravel(pan, tilt)) // 与设备页直发同一道检查
-            return nullptr;
-        return McztCollector::createPrototype(target, McztConfig::angleTol, hold,
-                                              McztVocab::startOf(pan, tilt), McztVocab::stopOf(),
-                                              McztConfig::expectedDurationMs);
+        const auto speeds = commandSpeeds(draft);
+        if (!speeds) return std::nullopt;
+        if (!McztVocab::withinTravel(McztPanMeta::position(draft.target.pan(), speeds->pan),
+                                     McztTiltMeta::position(draft.target.tilt(), speeds->tilt)))
+        {
+            Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
+            return std::nullopt;
+        }
+        return GMBMoveParameters{draft.target, draft.hold, *speeds};
+    }
+
+private:
+    // 任务的速度快照在此编码入指令；重试由 Device 按本斗不可变配置 makeSelf，不回读界面。
+    [[nodiscard]] std::shared_ptr<McztCollector> makeMoveCollector(const GMBMoveParameters &draft) const override
+    {
+        const auto parameters = paramsFor(draft);
+        if (!parameters) return nullptr;
+        const auto pan = McztPanMeta::position(parameters->target.pan(), parameters->speeds->pan);
+        const auto tilt = McztTiltMeta::position(parameters->target.tilt(), parameters->speeds->tilt);
+        return McztCollector::create(parameters->target, McztConfig::angleTol, parameters->hold,
+                                     McztVocab::startOf(pan, tilt), McztVocab::stopOf(),
+                                     McztConfig::expectedDurationMs);
     }
 
     // [worker] 族层常态灶的解析口。本云台 100 Hz 自动上报，**不因有没有 run 而中断**，且一帧同报两轴：
@@ -267,12 +280,12 @@ public Q_SLOTS:
     }
 
 private:
-    // 两轴定位使用显式快照；组包前的检查与 Collector 工厂相同。
-    bool issueGoTo(const PanTiltModel &target, const GMBMoveParameters &parameters) override
+    // 两轴定位使用显式快照；与 Collector 工厂共用 paramsFor 判据。
+    bool issueGoTo(const GMBMoveParameters &draft) override
     {
-        const auto speeds = commandSpeeds(parameters);
-        return speeds && issue(McztPanMeta::position(target.pan(), speeds->pan),
-                               McztTiltMeta::position(target.tilt(), speeds->tilt));
+        const auto parameters = paramsFor(draft);
+        return parameters && issue(McztPanMeta::position(parameters->target.pan(), parameters->speeds->pan),
+                                   McztTiltMeta::position(parameters->target.tilt(), parameters->speeds->tilt));
     }
 
     // 直发一帧（不造斗、不起 run、不拿锁，见上方分区注）。组包前查行程，与造斗同一道 McztVocab::withinTravel：
