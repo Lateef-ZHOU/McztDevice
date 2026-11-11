@@ -248,7 +248,7 @@ public Q_SLOTS:
     {
         return GMBDevice::setMounting(WorldModel(azimuth, elevation, roll), {});
     }
-    bool issueStop() override { return issue(McztPanMeta::stop(), McztTiltMeta::stop()); }
+    bool issueStop() { return GMBDevice::issueStop(); }
 
     // 起点 / 终点**不互相约束**：方位是环面，150° → 30° 是合法的反向扫。
     // （俯仰扇扫则要 lo ≤ hi——同是"两个框"，约束却相反，这正是不把它抽成一个控件的理由。）
@@ -269,14 +269,6 @@ public Q_SLOTS:
     }
 
 private:
-    // 两轴定位使用显式快照；与 Collector 工厂共用 paramsFor 判据。
-    bool issueGoTo(const std::optional<GMBMoveParameters> &parameters) override
-    {
-        return parameters && parameters->speeds
-            && issue(McztPanMeta::position(parameters->target.pan(), parameters->speeds->pan),
-                     McztTiltMeta::position(parameters->target.tilt(), parameters->speeds->tilt));
-    }
-
     // 直发一帧（不造斗、不起 run、不拿锁，见上方分区注）。组包前查行程，与造斗同一道 McztVocab::withinTravel：
     // 越界不发、记一条。验锁与连接由 `send`（canEngage）判，拒发时它自己记日志。
     bool issue(const McztPanMeta &pan, const McztTiltMeta &tilt)
