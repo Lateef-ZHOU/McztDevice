@@ -51,6 +51,6 @@ static constexpr auto uplinkInterval = std::chrono::milliseconds{10};
 static constexpr auto angleChartWindow = std::chrono::minutes{2};
 static constexpr auto angleHistoryWindow = std::chrono::hours{1}; // 覆盖虚拟卡最长累积窗，显示窗不变。
 
-// 读取政策（唤醒间隔 / 内核缓冲）**不在型号宪法里**——那是族级常量，住 GMBDeviceBase::kPcap*
+// 读取政策（唤醒间隔 / 内核缓冲）**不在型号宪法里**——那是族级常量，住 GMBFamily::kPcap*
 // （理由见那儿：由流量形状决定，与型号无关）。
 } // namespace McztConfig

@@ -12,7 +12,7 @@
 
 #include "GimbalModel.h"                     // PanTiltModel（造斗收的目标位形）
 #include "PcapForm.h"
-#include "GMBDevice.h"                  // 云台族两层（族基 GMBDeviceBase + 族层 GMBDevice）
+#include "GMBDevice.h"                  // 云台族两层（族基 GMBFamily + 族层 GMBDevice）
 #include "McztConfig.h"         // 型号夹宪法
 #include "McztRunSide.h"        // 运行侧：两轴意图 + 意图 → 指令
 
