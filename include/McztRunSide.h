@@ -5,6 +5,7 @@
 #include <QtEndian>
 #include <QtGlobal>
 
+#include "McztConfig.h"
 #include "McztVocab.h" // 协议实现层：帧常量 + AxisCmd + 角速度↔码 + 累加和
 
 
@@ -179,5 +180,16 @@ namespace McztVocab
 }
 } // namespace McztVocab
 
-struct McztCollectorTag;
+// 铭辰型号标签：容差、时限取型号常量；任务的速度快照（paramsFor 已量化、必带）在此编码入启动指令。
+struct McztCollectorTag
+{
+    static constexpr double tolerance = McztConfig::angleTol;
+    static constexpr int timeoutMs = McztConfig::expectedDurationMs;
+    [[nodiscard]] static QList<QByteArray> startOf(const GMBMoveParameters &parameters)
+    {
+        return McztVocab::startOf(McztPanMeta::position(parameters.target.pan(), parameters.speeds->pan),
+                                  McztTiltMeta::position(parameters.target.tilt(), parameters.speeds->tilt));
+    }
+    [[nodiscard]] static QList<QByteArray> stopOf() { return McztVocab::stopOf(); }
+};
 using McztCollector = TypedGMBCollector<McztCollectorTag>;

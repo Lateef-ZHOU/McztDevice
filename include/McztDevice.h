@@ -28,7 +28,7 @@
 
 // ============================================================
 // McztDevice — MCZT46 云台设备子类：子夹最高长官（职责对齐 SqafDevice）。四件事：
-//   ① paramsFor 校验并量化运动参数，makeMoveCollector 据此构造定位 Collector。
+//   ① paramsFor 校验并量化运动参数（唯一能造出参数的入口），族层 begin 以它直接构造定位 Collector。
 //      逐轴动作（扇扫 / 循环 / 停止）只走设备页直发，不造斗。
 //   ② 常态灶的解析口 decodeStream：上报**不因有没有 run 而中断**；一帧同报两轴，解一次交出实测位形
 //      （回显与喂斗共用）。换世界角、画图、喂斗归族层与机制层。
@@ -160,22 +160,10 @@ public:
             Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
             return std::nullopt;
         }
-        return GMBMoveParameters{target, hold, *speeds};
+        return GMBMoveParameters(*this, target, hold, *speeds);
     }
 
 private:
-    // 任务的速度快照在此编码入指令；重试由 Device 按本斗不可变配置 makeSelf，不回读界面。
-    [[nodiscard]] std::shared_ptr<McztCollector> makeMoveCollector(const GMBMoveParameters &requested) const override
-    {
-        const auto parameters = paramsFor(requested.target, requested.hold, requested.speeds);
-        if (!parameters) return nullptr;
-        const auto pan = McztPanMeta::position(parameters->target.pan(), parameters->speeds->pan);
-        const auto tilt = McztTiltMeta::position(parameters->target.tilt(), parameters->speeds->tilt);
-        return McztCollector::create(parameters->target, McztConfig::angleTol, parameters->hold,
-                                     McztVocab::startOf(pan, tilt), McztVocab::stopOf(),
-                                     McztConfig::expectedDurationMs);
-    }
-
     // [worker] 族层常态灶的解析口。本云台 100 Hz 自动上报，**不因有没有 run 而中断**，且一帧同报两轴：
     // 解一次（`McztVocab::decodeUplink`）交出实测位形——回显与喂斗共用，**每一口都交**。
     // 上行帧里的两个速度量不用：判到位由族级收集器按"进容差圈后稳住多久"判。
