@@ -18,12 +18,6 @@ ModulePage {
     property int networkInterfaceIndex: internals.connectionParameters.networkInterfaceDefault
     property real panSpeed: internals.controlParameters.panSpeedDefault
     property real tiltSpeed: internals.controlParameters.tiltSpeedDefault
-    function moveParameters() {
-        return ({
-                panSpeed: root.panSpeed,
-                tiltSpeed: root.tiltSpeed
-            });
-    }
     mainPages: [
         Page {
             title: qsTr("角度")

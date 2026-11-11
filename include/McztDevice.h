@@ -240,9 +240,9 @@ public Q_SLOTS:
     }
     void close() { PcapHandle::close(); }
     // Qt 入口接收页面参数；成功只返回结果，文案由 QML 生成。标定三个角一次提交。
-    bool issueGoTo(const double pan, const double tilt, const QVariantMap &parameters)
+    bool issueGoTo(const double pan, const double tilt, const double panSpeed, const double tiltSpeed)
     {
-        return GMBDevice::issueGoTo(pan, tilt, parameters);
+        return GMBDevice::issueGoTo(pan, tilt, panSpeed, tiltSpeed);
     }
     bool setMounting(const double azimuth, const double elevation, const double roll)
     {
