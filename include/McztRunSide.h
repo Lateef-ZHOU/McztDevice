@@ -185,7 +185,7 @@ struct McztCollectorTag
 {
     static constexpr double tolerance = McztConfig::angleTol;
     static constexpr int timeoutMs = McztConfig::expectedDurationMs;
-    [[nodiscard]] static QList<QByteArray> startOf(const GMBMoveParameters &parameters)
+    [[nodiscard]] static QList<QByteArray> startOf(const GMBParameters &parameters)
     {
         return McztVocab::startOf(McztPanMeta::position(parameters.target.pan(), parameters.speeds->pan),
                                   McztTiltMeta::position(parameters.target.tilt(), parameters.speeds->tilt));

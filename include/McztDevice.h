@@ -132,7 +132,7 @@ private:
         const double step = McztConfig::speedStep;
         return std::round(std::clamp(value, step, maximum) / step) * step;
     }
-    [[nodiscard]] std::optional<GMBMoveParameters::Speeds> commandSpeeds(const std::optional<GMBMoveParameters::Speeds> &speeds) const
+    [[nodiscard]] std::optional<GMBParameters::Speeds> commandSpeeds(const std::optional<GMBParameters::Speeds> &speeds) const
     {
         if (!speeds)
         {
@@ -143,14 +143,14 @@ private:
         if (!pan) return std::nullopt;
         const auto tilt = commandSpeed(speeds->tilt, McztVocab::TiltSpeedMax);
         if (!tilt) return std::nullopt;
-        return GMBMoveParameters::Speeds{*pan, *tilt};
+        return GMBParameters::Speeds{*pan, *tilt};
     }
 
 public:
     // 型号判据（任务预验、造斗与直发共用）：铭辰定位必须带两轴速度，速度按协议步距量化钳制，
     // 行程按量化后的码值检查。越界或缺速度返回空并记录原因；不造 Collector、不发令。
-    [[nodiscard]] std::optional<GMBMoveParameters> paramsFor(const PanTiltModel &target, const std::chrono::milliseconds hold,
-        const std::optional<GMBMoveParameters::Speeds> &requested) const override
+    [[nodiscard]] std::optional<GMBParameters> paramsFor(const PanTiltModel &target, const std::chrono::milliseconds hold,
+        const std::optional<GMBParameters::Speeds> &requested) const override
     {
         const auto speeds = commandSpeeds(requested);
         if (!speeds) return std::nullopt;
@@ -160,7 +160,7 @@ public:
             Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
             return std::nullopt;
         }
-        return GMBMoveParameters(*this, target, hold, *speeds);
+        return GMBParameters(*this, target, hold, *speeds);
     }
 
 private:
