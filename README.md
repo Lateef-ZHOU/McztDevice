@@ -1,3 +1,7 @@
+## 2026-11-14：接入 FamilyCore（用户定）
+
+依赖声明与开关改用 FamilyCore / FAMILYCORE_WITH_*，协程头由 DeviceCore 提供。当前仅本地整理，GitHub 仍为 TaskCore，旧固定提交暂不更新；联调使用 `FETCHCONTENT_SOURCE_DIR_LIDAR_FAMILYCORE` 指向相邻 FamilyCore，并覆盖配套 DeviceCore/Algorithm 等源码。Windows 主程序或 simonly 的实际消费目标构建通过，业务与数据格式不变；未推送、未更新交付包。
+
 # McztDevice
 
 2026-11-09 用户定：官邸提供 `paramsFor(target, hold, speeds)`（型号校验与量化，任务预验、造斗与直发共用），makeMoveCollector 与手动 issueGoTo 都收 `GMBMoveParameters` 并复用该判据；删除 collectorFor 与只读原型，Collector 由 begin 直接造出完整对象。
@@ -19,7 +23,7 @@ LiDAR 的独立官邸：具体 C++ 后端、Collector/协议/处理逻辑及其 
 - QML 模块：`Lidar.Mczt`；页面：`McztModule`。
 - CMake 目标：`Lidar::McztDevice`；静态插件：`LidarMcztDeviceplugin`，最终可执行文件显式 `Q_IMPORT_QML_PLUGIN(LidarMcztDevicePlugin)`，并导入 TaskUI/UI/Charts 的静态插件。
 - 页面以 attached 对象拥有唯一具体后端，后端不能在 QML 直接创建。设备通过只读 `family` 借出族引用；任务页面只接收族列表，不依赖设备官邸。
-- 依赖由 `cmake/Dependencies.cmake` 固定到提交；可用标准 FetchContent 源码覆盖做联调。多个官邸并用时，先开启所有需要的 HandleCore/TaskCore 可选项，再配置共享库，避免已创建目标后补开模块。
+- 依赖由 `cmake/Dependencies.cmake` 固定到提交；可用标准 FetchContent 源码覆盖做联调。多个官邸并用时，先开启所有需要的 HandleCore/FamilyCore 可选项，再配置共享库，避免已创建目标后补开模块。
 - 需要 libpcap >= 1.10.0；Windows 使用 Npcap SDK 与已安装的 Npcap 运行时，Linux 使用 libpcap。驱动不随仓库分发。
 
 ## 构建与验证
