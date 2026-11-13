@@ -10,7 +10,7 @@
 #include <QUrl>
 #include <QVariantMap>
 
-#include "GimbalModel.h"                     // PanTiltModel（造斗收的目标位形）
+#include "GMBFamily/GimbalModel.h"                     // PanTiltModel（造斗收的目标位形）
 #include "PcapForm.h"
 #include "GMBFamily/GMBDevice.h"                  // 云台族两层（族基 GMBFamily + 族层 GMBDevice）
 #include "McztConfig.h"         // 型号夹宪法
