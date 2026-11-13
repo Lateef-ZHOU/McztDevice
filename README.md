@@ -1,3 +1,7 @@
+## 2026-11-14：驻留说明纠正（用户定）
+
+纠正 McztConfig 的旧注释：出圈清空驻留区间，重新进圈后按新的首末圈内样本计时；不是“出圈不清起点”。仅修改说明，型号参数、坐标换算、重试和取消链不变。集成验证见主程序维护操作，本轮不推送。
+
 ## 2026-11-14：接入 FamilyCore（用户定）
 
 依赖声明与开关改用 FamilyCore / FAMILYCORE_WITH_*，协程头由 DeviceCore 提供。当前仅本地整理，GitHub 仍为 TaskCore，旧固定提交暂不更新；联调使用 `FETCHCONTENT_SOURCE_DIR_LIDAR_FAMILYCORE` 指向相邻 FamilyCore，并覆盖配套 DeviceCore/Algorithm 等源码。Windows 主程序或 simonly 的实际消费目标构建通过，业务与数据格式不变；未推送、未更新交付包。
