@@ -1,5 +1,5 @@
 #pragma once
-#include "GMBCollector.h"
+#include "GMBFamily/GMBCollector.h"
 #include <QByteArray>
 #include <QList>
 #include <QtEndian>

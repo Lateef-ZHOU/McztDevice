@@ -7,7 +7,7 @@
 #include <memory>
 #include <QPointer>
 #include "DeviceBase.h"
-#include "GMBDevice.h"
+#include "GMBFamily/GMBDevice.h"
 Q_IMPORT_QML_PLUGIN(LidarUIPlugin)
 Q_IMPORT_QML_PLUGIN(LidarChartsPlugin)
 Q_IMPORT_QML_PLUGIN(LidarTaskUIPlugin)
