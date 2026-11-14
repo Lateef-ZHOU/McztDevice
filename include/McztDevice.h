@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <format>
 #include <QtQml/qqmlregistration.h>
 #include <algorithm>
 #include <cmath>
@@ -6,7 +8,6 @@
 #include <optional>
 #include <QByteArray>
 #include <QString>
-#include <QStringList>
 #include <QUrl>
 #include <QVariantMap>
 
@@ -126,7 +127,7 @@ private:
     {
         if (!std::isfinite(value))
         {
-            Q_EMIT this->logMessage(QStringLiteral("转台速度不是有限数，未下发"));
+            Q_EMIT this->logMessage("转台速度不是有限数，未下发");
             return std::nullopt;
         }
         const double step = McztConfig::speedStep;
@@ -136,7 +137,7 @@ private:
     {
         if (!speeds)
         {
-            Q_EMIT this->logMessage(QStringLiteral("铭辰定位缺少两轴速度，未下发"));
+            Q_EMIT this->logMessage("铭辰定位缺少两轴速度，未下发");
             return std::nullopt;
         }
         const auto pan = commandSpeed(speeds->pan, McztVocab::PanSpeedMax);
@@ -157,7 +158,7 @@ public:
         if (!McztVocab::withinTravel(McztPanMeta::position(target.pan(), speeds->pan),
                                      McztTiltMeta::position(target.tilt(), speeds->tilt)))
         {
-            Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
+            Q_EMIT this->logMessage("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发");
             return std::nullopt;
         }
         return GMBParameters(*this, target, hold, *speeds);
@@ -191,21 +192,25 @@ private:
             quint16 named = 0;
             for (const auto &[bit, name] : McztVocab::StatusNames)
                 named |= bit;
-            QStringList list;
+            std::string text;
+            const auto append = [&text](const std::string &name) {
+                if (!text.empty()) text += "、";
+                text += name;
+            };
             for (const auto &[bit, name] : McztVocab::StatusNames)
                 if (bits & bit)
-                    list << QString::fromUtf8(name);
+                    append(name);
             if (const auto rest = static_cast<quint16>(bits & ~named); rest != 0)
-                list << QStringLiteral("未列位 0x%1").arg(rest, 4, 16, QLatin1Char('0'));
-            return list.join(QStringLiteral("、"));
+                append(std::format("未列位 0x{:04x}", rest));
+            return text;
         };
-        const QString raised = names(static_cast<quint16>(status & ~status_));
-        const QString cleared = names(static_cast<quint16>(status_ & ~status));
+        const auto raised = names(static_cast<quint16>(status & ~status_));
+        const auto cleared = names(static_cast<quint16>(status_ & ~status));
         status_ = status;
-        if (!raised.isEmpty())
-            Q_EMIT this->logMessage(QStringLiteral("转台报警：") + raised);
-        if (!cleared.isEmpty())
-            Q_EMIT this->logMessage(QStringLiteral("报警解除：") + cleared);
+        if (!raised.empty())
+            Q_EMIT this->logMessage(std::format("转台报警：{}", raised));
+        if (!cleared.empty())
+            Q_EMIT this->logMessage(std::format("报警解除：{}", cleared));
     }
 
     quint16 status_ = 0; // [仅 worker] 上一帧的 BIT 状态字（只为判变化）
@@ -275,7 +280,7 @@ private:
     {
         if (!McztVocab::withinTravel(pan, tilt))
         {
-            Q_EMIT this->logMessage(QStringLiteral("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发"));
+            Q_EMIT this->logMessage("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发");
             return false;
         }
         return this->send(McztVocab::startOf(pan, tilt), {}); // 空令牌 = 我不持锁；与 Collector 共用成帧
