@@ -1,3 +1,9 @@
+## 2026-11-17：命令集合使用 vector（用户定）
+
+startOf/stopOf 与 Collector 标签统一返回 std::vector<std::vector<unsigned char>>，官邸直接交 Device::send，删除原批次转换。单条 buildFrame 编码保持，命令集合工厂负责转为自有字节；两轴位置/速度、停机命令、驻留及重试保持。
+
+不新增命令缓存或兼容包装。验证见主程序 docs/maintenance/validation.md；使用相邻源码覆盖，暂不推送。
+
 ## 2026-11-14：UTF-8 日志接口（用户定）
 
 日志直接使用 Handle 的 UTF-8 std::string；报警位列表、未命名位十六进制和变更文字均用标准字符串及 std::format 生成。报警变化判据、控制、QML 接线与设备生命周期不变。

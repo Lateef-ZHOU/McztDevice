@@ -1,7 +1,7 @@
 #pragma once
+#include <vector>
 #include "GMBFamily/GMBCollector.h"
 #include <QByteArray>
-#include <QList>
 #include <QtEndian>
 #include <QtGlobal>
 
@@ -168,13 +168,14 @@ namespace McztVocab
 }
 
 // 意图 → 启动指令（恰一帧）。
-[[nodiscard]] inline QList<QByteArray> startOf(const McztPanMeta &pan, const McztTiltMeta &tilt)
+[[nodiscard]] inline std::vector<std::vector<unsigned char>> startOf(const McztPanMeta &pan, const McztTiltMeta &tilt)
 {
-    return {buildFrame(pan, tilt)};
+    const auto frame = buildFrame(pan, tilt);
+    return {{frame.cbegin(), frame.cend()}};
 }
 
 // 停机指令：两轴都停（打断路发它）。停一个本就没动的轴无害。
-[[nodiscard]] inline QList<QByteArray> stopOf()
+[[nodiscard]] inline std::vector<std::vector<unsigned char>> stopOf()
 {
     return startOf(McztPanMeta::stop(), McztTiltMeta::stop());
 }
@@ -185,11 +186,11 @@ struct McztCollectorTag
 {
     static constexpr double tolerance = McztConfig::angleTol;
     static constexpr int timeoutMs = McztConfig::expectedDurationMs;
-    [[nodiscard]] static QList<QByteArray> startOf(const GMBParameters &parameters)
+    [[nodiscard]] static std::vector<std::vector<unsigned char>> startOf(const GMBParameters &parameters)
     {
         return McztVocab::startOf(McztPanMeta::position(parameters.target.pan(), parameters.speeds->pan),
                                   McztTiltMeta::position(parameters.target.tilt(), parameters.speeds->tilt));
     }
-    [[nodiscard]] static QList<QByteArray> stopOf() { return McztVocab::stopOf(); }
+    [[nodiscard]] static std::vector<std::vector<unsigned char>> stopOf() { return McztVocab::stopOf(); }
 };
 using McztCollector = TypedGMBCollector<McztCollectorTag>;

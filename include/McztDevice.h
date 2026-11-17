@@ -284,12 +284,7 @@ private:
             Q_EMIT this->logMessage("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发");
             return false;
         }
-        const auto commands = McztVocab::startOf(pan, tilt);
-        std::vector<std::vector<unsigned char>> packets;
-        packets.reserve(static_cast<std::size_t>(commands.size()));
-        for (const auto &command : commands)
-            packets.emplace_back(command.cbegin(), command.cend());
-        return this->send(packets, {}); // 空令牌 = 我不持锁；与 Collector 共用成帧
+        return this->send(McztVocab::startOf(pan, tilt), {}); // 空令牌 = 我不持锁；与 Collector 共用成帧
     }
 
 };
