@@ -1,3 +1,9 @@
+## 2026-11-17：速度草稿不按占用状态拦截（用户定）
+
+水平、俯仰速度编辑只更新 QML 草稿并记录设置日志，删除占用检查；不立即发令，不影响已提交的运动和任务快照。之后手动定位、扇扫及循环读取当时的草稿，分别经 Device::start 或 Device::send 统一验锁，型号速度校验、量化及命令编码保持。被任务占用时可以编辑下次用的值，实际手动命令仍被拒绝。
+
+仅修改 McztControl 的两处判断及注释，不新增状态或转发。验证见主程序 docs/maintenance/validation.md；使用相邻本地源码覆盖，暂不推送。
+
 ## 2026-11-17：命令集合使用 vector（用户定）
 
 startOf/stopOf 与 Collector 标签统一返回 std::vector<std::vector<unsigned char>>，官邸直接交 Device::send，删除原批次转换。单条 buildFrame 编码保持，命令集合工厂负责转为自有字节；两轴位置/速度、停机命令、驻留及重试保持。

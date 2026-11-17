@@ -25,7 +25,7 @@ Section {
     Subheading {
         text: qsTr("速度")
     }
-    // 控件按协议步距提交；占用时保留原值，SliderField 随后回读。C++ 发令时仍校验、量化。
+    // 速度编辑只更新 QML 草稿；定位、扇扫和循环取值发令时由底层验锁、校验及量化。
     FieldRow {
         label: qsTr("水平速度（°/s）")
         SliderField {
@@ -38,10 +38,6 @@ Section {
             onCommitted: function (v) {
                 if (v === root.settings.panSpeed)
                     return;
-                if (root.settings.deviceState.holder !== undefined && root.settings.deviceState.holder !== null) {
-                    root.settings.logMessage(qsTr("设备正被占用，水平速度未改"));
-                    return;
-                }
                 root.settings.panSpeed = v;
                 root.settings.logMessage(qsTr("水平速度：%1 °/s").arg(v.toFixed(1)));
             }
@@ -59,10 +55,6 @@ Section {
             onCommitted: function (v) {
                 if (v === root.settings.tiltSpeed)
                     return;
-                if (root.settings.deviceState.holder !== undefined && root.settings.deviceState.holder !== null) {
-                    root.settings.logMessage(qsTr("设备正被占用，俯仰速度未改"));
-                    return;
-                }
                 root.settings.tiltSpeed = v;
                 root.settings.logMessage(qsTr("俯仰速度：%1 °/s").arg(v.toFixed(1)));
             }
