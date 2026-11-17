@@ -50,8 +50,8 @@ class McztDevice final
 #endif
 {
     Q_OBJECT
-    Q_PROPERTY(QString displayName MEMBER displayName CONSTANT)
-    Q_PROPERTY(QString subtitle MEMBER subtitle CONSTANT)
+    Q_PROPERTY(std::string displayName MEMBER displayName CONSTANT)
+    Q_PROPERTY(std::string subtitle MEMBER subtitle CONSTANT)
     Q_PROPERTY(bool isOpen READ isOpen)
     Q_PROPERTY(QVariant holder READ qmlHolder)
     Q_PROPERTY(WorldModel mounting READ mounting NOTIFY mountingChanged)
@@ -87,7 +87,7 @@ public:
     ~McztDevice() override { PreDestruction(); }
 
     // 角一律本机定义（俯仰：水平 = 0、抬头为正）：码↔角的换算在 McztVocab，这里、界面、任务都只见本机角。
-    explicit McztDevice(QObject *parent) : GMBDevice(QStringLiteral("转台·铭辰机电"), QStringLiteral("MCZT46"), parent)
+    explicit McztDevice(QObject *parent) : GMBDevice("转台·铭辰机电", "MCZT46", parent)
     {
         setObjectName(QStringLiteral("Mczt")); // ASCII 标识：落盘会话目录名用
     }
