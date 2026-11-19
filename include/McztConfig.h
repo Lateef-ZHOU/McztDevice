@@ -9,7 +9,7 @@
 // 位 / 量程 / 分辨率）全在词典 McztVocab，两边不重复。
 //
 // 与 SqafConfig 的一处差别：**本店不列轴作动范围**。sqaf 要列，是因为 Pelco-D 不编码行程
-// 上下限；MCZT 的协议自己就写死了，那是协议事实，住 McztVocab::PanAngleMin/Max、TiltAngleMin/Max。
+// 上下限；MCZT 的命令编码与表单共用 McztVocab::PanAngleMin/Max、TiltAngleMin/Max。
 // 抄一份到这里就是给同一个数开第二本账。
 // ============================================================
 namespace McztConfig
@@ -21,10 +21,8 @@ static constexpr double angleTol = 0.05; // TODO[接机]: 待实测调整
 // 驻留时长由任务传入 GMBCollector，型号不另设常量；出圈清空驻留区间，再入圈重新按首末样本的间隔判齐。
 
 // ── 单次尝试时限 ────────────────────────────────────────────────────────────
-// **不能照抄 sqaf 的 5000**：本云台俯仰轴上限只有 2°/s（协议 McztVocab::TiltSpeedMax），
-// 走完 -2°~+92° 整段行程要 ≈47 s；水平 40°/s 走 360° 约 9 s。取 60 s 给俯仰留够余量——
-// 时限短于真实行程，看门狗就会在半路停机重发，云台永远走不到。
-static constexpr int expectedDurationMs = 60000; // TODO[接机]: 按实测行程时间收紧
+// 按默认俯仰速度估算整个测试窗为 180 s，另留 20 s 给加减速和驻留，避免过程中过早重发。
+static constexpr int expectedDurationMs = 200000; // TODO[接机]: 按实测行程时间收紧
 
 // **扇扫 / 循环没有时限**：它们没有停止条件（协议也报不出"异常退出"），只直发、不造斗，压根
 // 不进 run，故本店不为它们备第二个时限数（用户定：不做过度设计）。

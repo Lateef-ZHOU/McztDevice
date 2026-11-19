@@ -59,6 +59,7 @@ ModulePage {
         panMax: internals.positioningParameters.panMax
         tiltMin: internals.positioningParameters.tiltMin
         tiltMax: internals.positioningParameters.tiltMax
+        initialTilt: -2
     }
     readonly property Section modelControlSection: McztControl {
         device: internals.device

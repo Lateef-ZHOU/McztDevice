@@ -117,13 +117,14 @@ inline constexpr double PanSpeedMax = 40.0;  // °/s（码 0~400，分辨率 0.1
 inline constexpr double PanAngleMin = 0.0;   // °（码 0~36000，分辨率 0.01°）
 inline constexpr double PanAngleMax = 360.0;
 inline constexpr double TiltSpeedMax = 2.0;  // °/s（码 0~20，分辨率 0.1°/s）
-inline constexpr double TiltAngleMin = -2.0; // °，本机定义（码域 -200~9200 经换算正好也是 −2~92；分辨率 0.01°，负数补码）
-inline constexpr double TiltAngleMax = 92.0;
+// 台架测试的软件范围。端点对应有符号码 +18000 和 -18000，分辨率 0.01°。
+inline constexpr double TiltAngleMin = -90.0;
+inline constexpr double TiltAngleMax = 270.0;
 
 // ── 角/速度 ↔ 设备码（TX 说 / RX 听在此对望，形制承自 SqafVocab）────────────────
 // **一律先钳位再取整**：这是发给电机的最后一道闸。UI 侧的 validator 是第一道，但直发口
 // （官邸 on* 槽）与协程都可能绕开 UI，越界角度打到伺服上不是"无反应"那么客气。
-// **角 ↔ 码在此一步到位，角一律是本机定义**（俯仰：水平 = 0、抬头为正，窗 [−180, 180)；方位 [0, 360)；行程常量
+// **角 ↔ 码在此一步到位，角一律是本机定义**（俯仰：水平 = 0、抬头为正，测试窗 [−90, 270]；方位 [0, 360)；行程常量
 // 也是本机定义下的）：码里没有"角"的意思，码域怎么对应本机角只写在这四个函数的算式里（用户定）。
 // 俯仰的算式是 本机角 = 90° − 码/100（实测：上报 9000 时平视、0 时仰视），方位是 码/100。
 [[nodiscard]] inline quint16 PanSpeed2Code(const double dps)

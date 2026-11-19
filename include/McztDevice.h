@@ -150,7 +150,7 @@ public:
         if (!McztVocab::withinTravel(McztPanMeta::position(target.pan(), *pan),
                                      McztTiltMeta::position(target.tilt(), *tilt)))
         {
-            Q_EMIT this->logMessage("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发");
+            Q_EMIT this->logMessage("转台运动参数超出软件范围（方位 0~360°、俯仰 −90°~270°），未下发");
             return std::nullopt;
         }
         return GMBParameters(*this, target, hold, *pan, *tilt);
@@ -239,6 +239,12 @@ public Q_SLOTS:
     // Qt 入口接收页面参数；成功只返回结果，文案由 QML 生成。标定三个角一次提交。
     bool issueGoTo(const double pan, const double tilt, const double panSpeed, const double tiltSpeed)
     {
+        // 先检查原始俯仰输入，避免位形回绕把越界值变成可下发的角度。
+        if (!McztVocab::angleWithin(tilt, McztVocab::TiltAngleMin, McztVocab::TiltAngleMax))
+        {
+            Q_EMIT this->logMessage("转台俯仰超出软件范围（−90°~270°），未下发");
+            return false;
+        }
         return GMBDevice::issueGoTo(pan, tilt, panSpeed, tiltSpeed);
     }
     bool setMounting(const double azimuth, const double elevation, const double roll)
@@ -272,7 +278,7 @@ private:
     {
         if (!McztVocab::withinTravel(pan, tilt))
         {
-            Q_EMIT this->logMessage("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发");
+            Q_EMIT this->logMessage("转台运动参数超出软件范围（方位 0~360°、俯仰 −90°~270°），未下发");
             return false;
         }
         return this->send(McztVocab::startOf(pan, tilt), {}); // 空令牌 = 我不持锁；与 Collector 共用成帧

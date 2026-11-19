@@ -3,7 +3,7 @@ set(HANDLECORE_WITH_PCAP ON)
 if(NOT TARGET Lidar::HandleCore)
     FetchContent_Declare(lidar_handle_core
         GIT_REPOSITORY https://github.com/Lateef-ZHOU/HandleCore.git
-        GIT_TAG 7ad9b380fe8d58cdb00a97107e06a96f6f4ba9b0)
+        GIT_TAG 73d5bec896aeba4b445163df279fc15a3157ca4b)
     FetchContent_MakeAvailable(lidar_handle_core)
 endif()
 if(NOT TARGET Lidar::Pcap)
@@ -14,7 +14,7 @@ set(FAMILYCORE_WITH_PCAP_FORMS ON)
 if(NOT TARGET Lidar::TaskUI)
     FetchContent_Declare(lidar_familycore
         GIT_REPOSITORY https://github.com/Lateef-ZHOU/TaskCore.git
-        GIT_TAG 8e0b9e1781960df0d25748ef4838f5b47e763d90)
+        GIT_TAG 5f9e9dc8600112f5b68270ec021af2a6239bd47a)
     FetchContent_MakeAvailable(lidar_familycore)
 endif()
 if(NOT TARGET Lidar::PcapForms)

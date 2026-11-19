@@ -71,7 +71,7 @@ public:
     {
         return McztPanMeta{McztVocab::AxisCmd::Scan, from, to, dps};
     }
-    // **只有方位轴有**：协议表的俯仰 00 位留空，物理上也讲得通（俯仰只有 -2°~+92° 一段行程）。
+    // **只有方位轴有**：协议表的俯仰 00 位留空。
     // 口就写在这个类里，`McztTiltMeta::rotate(...)` 遂是一句编译错误，而不是一次运行期降格。
     [[nodiscard]] static McztPanMeta rotate(const double dps)
     {
