@@ -188,8 +188,8 @@ struct McztCollectorTag
     static constexpr int timeoutMs = McztConfig::expectedDurationMs;
     [[nodiscard]] static std::vector<std::vector<unsigned char>> startOf(const GMBParameters &parameters)
     {
-        return McztVocab::startOf(McztPanMeta::position(parameters.target.pan(), parameters.speeds->pan),
-                                  McztTiltMeta::position(parameters.target.tilt(), parameters.speeds->tilt));
+        return McztVocab::startOf(McztPanMeta::position(parameters.target.pan(), parameters.panSpeed),
+                                  McztTiltMeta::position(parameters.target.tilt(), parameters.tiltSpeed));
     }
     [[nodiscard]] static std::vector<std::vector<unsigned char>> stopOf() { return McztVocab::stopOf(); }
 };

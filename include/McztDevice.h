@@ -137,35 +137,23 @@ private:
         const double step = McztConfig::speedStep;
         return std::round(std::clamp(value, step, maximum) / step) * step;
     }
-    [[nodiscard]] std::optional<GMBParameters::Speeds> commandSpeeds(const std::optional<GMBParameters::Speeds> &speeds) const
-    {
-        if (!speeds)
-        {
-            Q_EMIT this->logMessage("铭辰定位缺少两轴速度，未下发");
-            return std::nullopt;
-        }
-        const auto pan = commandSpeed(speeds->pan, McztVocab::PanSpeedMax);
-        if (!pan) return std::nullopt;
-        const auto tilt = commandSpeed(speeds->tilt, McztVocab::TiltSpeedMax);
-        if (!tilt) return std::nullopt;
-        return GMBParameters::Speeds{*pan, *tilt};
-    }
-
 public:
-    // 型号判据（任务预验、造斗与直发共用）：铭辰定位必须带两轴速度，速度按协议步距量化钳制，
-    // 行程按量化后的码值检查。越界或缺速度返回空并记录原因；不造 Collector、不发令。
+    // 型号判据（任务预验、造斗与直发共用）：两轴速度按协议步距量化钳制，行程按量化后的码值检查。
+    // 越界或速度不是有限数时返回空并记录原因；不造 Collector、不发令。
     [[nodiscard]] std::optional<GMBParameters> paramsFor(const PanTiltModel &target, const std::chrono::milliseconds hold,
-        const std::optional<GMBParameters::Speeds> &requested) const override
+        const double panSpeed, const double tiltSpeed) const override
     {
-        const auto speeds = commandSpeeds(requested);
-        if (!speeds) return std::nullopt;
-        if (!McztVocab::withinTravel(McztPanMeta::position(target.pan(), speeds->pan),
-                                     McztTiltMeta::position(target.tilt(), speeds->tilt)))
+        const auto pan = commandSpeed(panSpeed, McztVocab::PanSpeedMax);
+        if (!pan) return std::nullopt;
+        const auto tilt = commandSpeed(tiltSpeed, McztVocab::TiltSpeedMax);
+        if (!tilt) return std::nullopt;
+        if (!McztVocab::withinTravel(McztPanMeta::position(target.pan(), *pan),
+                                     McztTiltMeta::position(target.tilt(), *tilt)))
         {
             Q_EMIT this->logMessage("转台运动参数超出协议量程（方位 0~360°、俯仰 −2°~+92°），未下发");
             return std::nullopt;
         }
-        return GMBParameters(*this, target, hold, *speeds);
+        return GMBParameters(*this, target, hold, *pan, *tilt);
     }
 
 private:
