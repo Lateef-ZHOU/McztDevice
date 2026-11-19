@@ -3,6 +3,7 @@
 #include <array>     // decodeUplink：四个量
 #include <cmath>     // std::lround（角/速度 → 设备码）
 #include <optional>  // decodeUplink：空 = 帧不对
+#include <span>
 #include <utility>   // StatusNames：位 → 名称
 #include <QByteArray>
 #include <QtEndian> // qToBigEndian / qFromBigEndian（本协议全字段大端）
@@ -164,11 +165,11 @@ inline constexpr int SlotPan = 0;
 inline constexpr int SlotTilt = 1;
 
 // 一帧 20 字节上行 → 两个角。空 = 长度 / 帧头 / 帧尾 / 累加和任一不对。
-[[nodiscard]] inline std::optional<std::array<double, 2>> decodeUplink(const QByteArray &raw)
+[[nodiscard]] inline std::optional<std::array<double, 2>> decodeUplink(std::span<const unsigned char> raw)
 {
     if (raw.size() != UpSize)
         return std::nullopt; // 长度不对
-    const auto *p = reinterpret_cast<const quint8 *>(raw.constData());
+    const auto *p = raw.data();
     if (p[0] != HeadHi || p[1] != HeadLo)
         return std::nullopt; // 帧头不对
     if (p[UpTailOff] != TailHi || p[UpTailOff + 1] != TailLo)
@@ -182,9 +183,9 @@ inline constexpr int SlotTilt = 1;
 }
 
 // 上行 BIT 状态字（大端 quint16，位定义见 Status）。**只在 decodeUplink 验过帧之后调**——本口不再验长度。
-[[nodiscard]] inline quint16 uplinkStatus(const QByteArray &raw)
+[[nodiscard]] inline quint16 uplinkStatus(std::span<const unsigned char> raw)
 {
-    return qFromBigEndian<quint16>(reinterpret_cast<const quint8 *>(raw.constData()) + UpStatusOff);
+    return qFromBigEndian<quint16>(raw.data() + UpStatusOff);
 }
 
 // 状态位 → 协议表名称（按位号升序；表里留空的位不列）。官邸记报警日志用。

@@ -6,8 +6,8 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <span>
 #include <vector>
-#include <QByteArray>
 #include <QString>
 #include <QUrl>
 #include <QVariantMap>
@@ -162,7 +162,7 @@ private:
     // 上行帧里的两个速度量不用：判到位由族级收集器按"进容差圈后稳住多久"判。
     // **BIT 状态字按协议记报警日志**（用户定）：帧验过之后读状态字，变化时记"报警 / 解除"（见 logStatusChange）。
     // 解不开的帧直接丢弃（不回显、不喂斗、不记日志）。
-    [[nodiscard]] std::optional<PanTiltModel> decodeStream(const QByteArray &raw) override
+    [[nodiscard]] std::optional<PanTiltModel> decodeStream(std::span<const unsigned char> raw) override
     {
         const auto u = McztVocab::decodeUplink(raw);
         if (!u)
