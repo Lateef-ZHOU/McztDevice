@@ -197,6 +197,13 @@ class McztCollector final : public GMBCollector
 {
 public:
     explicit McztCollector(const GMBParameters &parameters)
-        : GMBCollector(parameters, McztCollectorTag::tolerance, McztCollectorTag::startOf(parameters),
-                       McztCollectorTag::stopOf(), McztCollectorTag::timeoutMs) {}
+        : GMBCollector(parameters, McztCollectorTag::tolerance) {}
+
+    [[nodiscard]] std::vector<std::vector<unsigned char>> buildStart() const override
+    {
+        return McztVocab::startOf(McztPanMeta::position(target.pan(), panSpeed),
+                                  McztTiltMeta::position(target.tilt(), tiltSpeed));
+    }
+    [[nodiscard]] std::vector<std::vector<unsigned char>> buildStop() const override { return McztVocab::stopOf(); }
+    [[nodiscard]] int timeoutMs() const override { return McztCollectorTag::timeoutMs; }
 };
