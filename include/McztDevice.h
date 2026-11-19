@@ -117,6 +117,9 @@ public:
     }
 
 private:
+    // Device 要求的停机命令：无 run 时由官邸直接提供，不经 Collector。
+    [[nodiscard]] std::vector<std::vector<unsigned char>> stopCommands() const final { return McztVocab::stopOf(); }
+
     void PreDestruction() noexcept final
     {
         static_assert(FinalDevice<McztDevice, decltype(&McztDevice::PreDestruction)>);
