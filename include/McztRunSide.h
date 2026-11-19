@@ -193,4 +193,10 @@ struct McztCollectorTag
     }
     [[nodiscard]] static std::vector<std::vector<unsigned char>> stopOf() { return McztVocab::stopOf(); }
 };
-using McztCollector = TypedGMBCollector<McztCollectorTag>;
+class McztCollector final : public GMBCollector
+{
+public:
+    explicit McztCollector(const GMBParameters &parameters)
+        : GMBCollector(parameters, McztCollectorTag::tolerance, McztCollectorTag::startOf(parameters),
+                       McztCollectorTag::stopOf(), McztCollectorTag::timeoutMs) {}
+};
