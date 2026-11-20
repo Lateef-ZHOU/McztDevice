@@ -4,6 +4,7 @@
 #include <QQmlListReference>
 #include <QtQml/QQmlExtensionPlugin>
 #include <QDebug>
+#include <cmath>
 #include <memory>
 #include <QPointer>
 #include <QtEndian>
@@ -42,13 +43,13 @@ int main(int argc, char **argv)
         if (page->property("family").value<QObject *>() != backend || !dynamic_cast<GMBFamily *>(backend)) return 7;
         auto *device = qobject_cast<McztDevice *>(backend);
         const auto form = device->positioningParameters();
-        if (form.value("tiltMin").toDouble() != -90.0 || form.value("tiltMax").toDouble() != 270.0)
+        if (form.value("tiltMin").toDouble() != 0.0 || form.value("tiltMax").toDouble() != 180.0)
             return 8;
         for (int index : {1, 2}) {
-            if (sections.at(index)->property("tiltMin").toDouble() != -90.0
-                || sections.at(index)->property("tiltMax").toDouble() != 270.0) return 9;
+            if (sections.at(index)->property("tiltMin").toDouble() != 0.0
+                || sections.at(index)->property("tiltMax").toDouble() != 180.0) return 9;
         }
-        for (const double angle : {-90.0, -45.0, 150.0, 270.0}) {
+        for (const double angle : {0.0, 45.0, 90.0, 150.0, 180.0}) {
             const auto params = device->paramsFor(PanTiltModel(0, angle), {}, 40, 2);
             if (!device->withinTravel(0, angle) || !params || params->target.tilt() != angle) return 10;
             const auto packets = McztCollector(*params).buildStart();
@@ -56,11 +57,32 @@ int main(int argc, char **argv)
                 || qFromBigEndian<qint32>(packets.front().data() + McztVocab::DownTiltAngle1Off)
                     != static_cast<qint32>((90 - angle) * 100)) return 11;
         }
-        const auto scan = McztVocab::buildFrame(McztPanMeta::hold(), McztTiltMeta::scan(-90, 270, 2));
-        if (qFromBigEndian<qint32>(scan.constData() + McztVocab::DownTiltAngle1Off) != 18000
-            || qFromBigEndian<qint32>(scan.constData() + McztVocab::DownTiltAngle2Off) != -18000
-            || device->withinTravel(0, -90.01) || device->withinTravel(0, 270.01)
-            || McztVocab::withinTravel(McztPanMeta::hold(), McztTiltMeta::scan(-90, 270.01, 2))) return 12;
+        const auto scan = McztVocab::buildFrame(McztPanMeta::hold(), McztTiltMeta::scan(0, 180, 2));
+        if (qFromBigEndian<qint32>(scan.constData() + McztVocab::DownTiltAngle1Off) != 9000
+            || qFromBigEndian<qint32>(scan.constData() + McztVocab::DownTiltAngle2Off) != -9000
+            || device->withinTravel(0, -0.01) || device->withinTravel(0, 180.01)
+            || McztVocab::withinTravel(McztPanMeta::hold(), McztTiltMeta::scan(-0.01, 180, 2))
+            || McztVocab::withinTravel(McztPanMeta::hold(), McztTiltMeta::scan(0, 180.01, 2))) return 12;
+        if (sections.at(1)->property("initialTilt").toDouble() != 0.0
+            || device->paramsFor(PanTiltModel(0, -0.01), {}, 40, 2)
+            || device->paramsFor(PanTiltModel(0, 180.01), {}, 40, 2)) return 13;
+        constexpr double epsilon = 1e-6;
+        for (const double tilt : {0.0, 89.99, 90.0, 90.01, 150.0, 180.0}) {
+            const PanTiltModel pose(180.01, tilt);
+            const auto display = device->worldForReadout(pose);
+            if (AngularDistance(display.azimuth(), pose.pan()) > epsilon
+                || std::abs(display.elevation() - tilt) > epsilon) return 14;
+        }
+        const PanTiltModel overTop(180.01, 180);
+        const auto canonical = device->worldOf(overTop);
+        if (AngularDistance(canonical.azimuth(), 0.01) > epsilon
+            || std::abs(canonical.elevation()) > epsilon) return 15;
+        if (!device->setMounting(20, 10, 5)) return 16;
+        const auto calibrated = device->worldForReadout(PanTiltModel(45, 145));
+        const auto actual = calibrated.toOrientation();
+        const auto expected = device->worldOf(PanTiltModel(45, 145)).toOrientation();
+        if (std::abs(calibrated.roll()) > 90
+            || SO3::logRotation(expected.inverseRotation() * actual).norm() > epsilon) return 17;
         const QPointer<QObject> lifetime(backend);
         app.processEvents();
         page.reset();

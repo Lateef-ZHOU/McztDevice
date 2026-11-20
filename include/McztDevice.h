@@ -96,6 +96,20 @@ public:
     // 族口：**本台方位轴带滑环**——可一直同向转，跨零不必回绕（任务页的轮末那一笔据此画）。
     [[nodiscard]] bool hasSlipRing() const noexcept final { return true; }
 
+    // 同一世界朝向有两组欧拉角。回显取横滚绝对值不大于 90° 的一支，
+    // 使零标定下俯仰越过天顶时继续增大，方位保持与转台水平一致。
+    [[nodiscard]] WorldModel worldForReadout(const PanTiltModel &pose) const override
+    {
+        const auto &base = this->mounting();
+        // 水平安装时只叠加方位偏置，过天顶也保留原始回报的精度。
+        if (base.elevation() == 0.0 && base.roll() == 0.0)
+            return {base.azimuth() + pose.pan(), pose.tilt()};
+        const auto world = this->worldOf(pose);
+        if (std::abs(world.roll()) <= 90.0)
+            return world;
+        return {world.azimuth() + 180.0, 180.0 - world.elevation(), world.roll() + 180.0};
+    }
+
     // 预览只查询型号判据，不造 Collector、不发令、不记录操作日志。
     Q_INVOKABLE bool withinTravel(const double pan, const double tilt) const override
     {
@@ -150,7 +164,7 @@ public:
         if (!McztVocab::withinTravel(McztPanMeta::position(target.pan(), *pan),
                                      McztTiltMeta::position(target.tilt(), *tilt)))
         {
-            Q_EMIT this->logMessage("转台运动参数超出软件范围（方位 0~360°、俯仰 −90°~270°），未下发");
+            Q_EMIT this->logMessage("转台运动参数超出软件范围（方位 0~360°、俯仰 0°~180°），未下发");
             return std::nullopt;
         }
         return GMBParameters(*this, target, hold, *pan, *tilt);
@@ -242,7 +256,7 @@ public Q_SLOTS:
         // 先检查原始俯仰输入，避免位形回绕把越界值变成可下发的角度。
         if (!McztVocab::angleWithin(tilt, McztVocab::TiltAngleMin, McztVocab::TiltAngleMax))
         {
-            Q_EMIT this->logMessage("转台俯仰超出软件范围（−90°~270°），未下发");
+            Q_EMIT this->logMessage("转台俯仰超出软件范围（0°~180°），未下发");
             return false;
         }
         return GMBDevice::issueGoTo(pan, tilt, panSpeed, tiltSpeed);
@@ -278,7 +292,7 @@ private:
     {
         if (!McztVocab::withinTravel(pan, tilt))
         {
-            Q_EMIT this->logMessage("转台运动参数超出软件范围（方位 0~360°、俯仰 −90°~270°），未下发");
+            Q_EMIT this->logMessage("转台运动参数超出软件范围（方位 0~360°、俯仰 0°~180°），未下发");
             return false;
         }
         return this->send(McztVocab::startOf(pan, tilt), {}); // 空令牌 = 我不持锁；与 Collector 共用成帧
