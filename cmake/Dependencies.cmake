@@ -14,7 +14,7 @@ set(FAMILYCORE_WITH_PCAP_FORMS ON)
 if(NOT TARGET Lidar::TaskUI)
     FetchContent_Declare(lidar_familycore
         GIT_REPOSITORY https://github.com/Lateef-ZHOU/TaskCore.git
-        GIT_TAG 5adca20e7ad1873cb2240297190ae52cf063c146)
+        GIT_TAG a09751987e34bbb49d6add421081bcefb880ddd3)
     FetchContent_MakeAvailable(lidar_familycore)
 endif()
 if(NOT TARGET Lidar::PcapForms)

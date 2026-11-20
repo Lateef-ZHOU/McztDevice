@@ -15,8 +15,8 @@
 namespace McztConfig
 {
 // ── 判到位阈值 ──────────────────────────────────────────────────────────────
-// 水平曾实测偏差 0.11°，按协议的 0.01° 分辨率留一档余量。俯仰沿用 0.05°。
-static constexpr double panAngleTolerance = 0.12;
+// 水平到位容差为 0.2°（用户定），俯仰沿用 0.05°。
+static constexpr double panAngleTolerance = 0.2;
 static constexpr double tiltAngleTolerance = 0.05;
 
 // 驻留时长由任务传入 GMBCollector，型号不另设常量；出圈清空驻留区间，再入圈重新按首末样本的间隔判齐。
