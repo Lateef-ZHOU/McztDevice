@@ -5,6 +5,8 @@
 #include <QtQml/QQmlExtensionPlugin>
 #include <QDebug>
 #include <array>
+#include <chrono>
+#include <thread>
 #include <cmath>
 #include <utility>
 #include <memory>
@@ -91,6 +93,19 @@ int main(int argc, char **argv)
         const auto canonical = device->worldOf(overTop);
         if (AngularDistance(canonical.azimuth(), 0.01) > epsilon
             || std::abs(canonical.elevation()) > epsilon) return 15;
+        const auto target = device->paramsFor(device->gimbalOf(WorldModel(180, 20)), {}, 40, 2);
+        if (!target) return 19;
+        McztCollector arrival(*target);
+        const PanTiltModel reported(179.92, McztVocab::Code2TiltAngle(-7000));
+        const auto hold = GMBCollector::kMinHold;
+        if (arrival.feed(PanTiltModel(179.87, reported.tilt()), {})) return 19;
+        std::this_thread::sleep_for(hold);
+        if (arrival.feed(reported, {})) return 19; // 水平越界样本不计入驻留。
+        std::this_thread::sleep_for(hold);
+        if (arrival.feed(PanTiltModel(reported.pan(), 20.06), {})) return 19; // 俯仰容差仍为 0.05°。
+        if (arrival.feed(reported, {})) return 19; // 出圈后重新计算驻留。
+        std::this_thread::sleep_for(hold);
+        if (!arrival.feed(reported, {})) return 19;
         if (!device->setMounting(20, 10, 5)) return 16;
         const auto calibrated = device->worldForReadout(PanTiltModel(45, 145));
         const auto actual = calibrated.toOrientation();

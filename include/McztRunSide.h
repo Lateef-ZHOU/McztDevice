@@ -184,7 +184,6 @@ namespace McztVocab
 // 铭辰型号标签：容差、时限取型号常量；任务的速度快照（paramsFor 已量化、必带）在此编码入启动指令。
 struct McztCollectorTag
 {
-    static constexpr double tolerance = McztConfig::angleTol;
     static constexpr int timeoutMs = McztConfig::expectedDurationMs;
     [[nodiscard]] static std::vector<std::vector<unsigned char>> startOf(const GMBParameters &parameters)
     {
@@ -197,7 +196,7 @@ class McztCollector final : public GMBCollector
 {
 public:
     explicit McztCollector(const GMBParameters &parameters)
-        : GMBCollector(parameters, McztCollectorTag::tolerance) {}
+        : GMBCollector(parameters, McztConfig::panAngleTolerance, McztConfig::tiltAngleTolerance) {}
 
     [[nodiscard]] std::vector<std::vector<unsigned char>> buildStart() const override
     {

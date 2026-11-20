@@ -15,8 +15,9 @@
 namespace McztConfig
 {
 // ── 判到位阈值 ──────────────────────────────────────────────────────────────
-// 造斗时交给族级收集器：多近算"进了容差圈"。协议分辨率是 0.01°，取 0.05° 留四个最小刻度的余量。
-static constexpr double angleTol = 0.05; // TODO[接机]: 待实测调整
+// 水平曾实测偏差 0.11°，按协议的 0.01° 分辨率留一档余量。俯仰沿用 0.05°。
+static constexpr double panAngleTolerance = 0.12;
+static constexpr double tiltAngleTolerance = 0.05;
 
 // 驻留时长由任务传入 GMBCollector，型号不另设常量；出圈清空驻留区间，再入圈重新按首末样本的间隔判齐。
 
