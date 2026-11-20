@@ -117,7 +117,7 @@ inline constexpr double PanSpeedMax = 40.0;  // °/s（码 0~400，分辨率 0.1
 inline constexpr double PanAngleMin = 0.0;   // °（码 0~36000，分辨率 0.01°）
 inline constexpr double PanAngleMax = 360.0;
 inline constexpr double TiltSpeedMax = 2.0;  // °/s（码 0~20，分辨率 0.1°/s）
-// 铭辰确认的本机俯仰行程。端点对应有符号码 +9000 和 -9000，分辨率 0.01°。
+// 铭辰确认的本机俯仰行程。端点对应有符号码 -9000 和 +9000，分辨率 0.01°。
 inline constexpr double TiltAngleMin = 0.0;
 inline constexpr double TiltAngleMax = 180.0;
 
@@ -126,7 +126,7 @@ inline constexpr double TiltAngleMax = 180.0;
 // （官邸 on* 槽）与协程都可能绕开 UI，越界角度打到伺服上不是"无反应"那么客气。
 // **角 ↔ 码在此一步到位，角一律是本机定义**（俯仰：水平 = 0、抬头为正，行程 [0, 180]；方位 [0, 360)；行程常量
 // 也是本机定义下的）：码里没有"角"的意思，码域怎么对应本机角只写在这四个函数的算式里（用户定）。
-// 俯仰的算式是 本机角 = 90° − 码/100（实测：上报 9000 时平视、0 时仰视），方位是 码/100。
+// 俯仰的算式是 本机角 = 90° + 码/100（码 -9000、0、+9000 分别是 0°、90°、180°），方位是 码/100。
 [[nodiscard]] inline quint16 PanSpeed2Code(const double dps)
 {
     return static_cast<quint16>(std::lround(std::clamp(dps, 0.0, PanSpeedMax) * 10.0));
@@ -139,13 +139,13 @@ inline constexpr double TiltAngleMax = 180.0;
 {
     return static_cast<quint16>(std::lround(std::clamp(dps, 0.0, TiltSpeedMax) * 10.0));
 }
-// 俯仰码可负：留在有符号域，大端写出即补码（协议原话"负数采用补码形式"）。码 = (90° − 本机角)×100。
+// 俯仰码可负：留在有符号域，大端写出即补码（协议原话"负数采用补码形式"）。码 = (本机角 − 90°)×100。
 [[nodiscard]] inline qint32 TiltAngle2Code(const double deg)
 {
-    return static_cast<qint32>(std::lround((90.0 - std::clamp(deg, TiltAngleMin, TiltAngleMax)) * 100.0));
+    return static_cast<qint32>(std::lround((std::clamp(deg, TiltAngleMin, TiltAngleMax) - 90.0) * 100.0));
 }
 [[nodiscard]] inline double Code2PanAngle(const quint32 code) { return code / 100.0; }
-[[nodiscard]] inline double Code2TiltAngle(const qint32 code) { return 90.0 - code / 100.0; } // 本机角 = 90° − 码/100（绕一圈折回归模型构造）
+[[nodiscard]] inline double Code2TiltAngle(const qint32 code) { return 90.0 + code / 100.0; }
 
 // ── 累加和：逐字节求和取低 8 位，收 [first, last) 半开区间。
 //    下行按协议取 [2,27)；**上行按实机取 [2,15)**（见 UpChecksumEnd 的注）。下行未改：若伺服校验下行也是
